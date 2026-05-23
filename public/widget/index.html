@@ -97,15 +97,13 @@
   </div>
 </div>
 <div id="status"></div>
-<audio id="donAudio" preload="auto"></audio>
-<audio id="alertAudio" preload="auto"></audio>
+<audio id="playerAudio" preload="auto"></audio>
 
 <script>
   const alertBox = document.getElementById('alertBox');
   const text1El = document.getElementById('text1');
   const text2El = document.getElementById('text2');
-  const donAudio = document.getElementById('donAudio');
-  const audioEl = document.getElementById('alertAudio');
+  const playerAudio = document.getElementById('playerAudio');
   const statusDot = document.getElementById('status');
 
   // ID стримера из URL: /widget/AbCdEfGhIj
@@ -137,80 +135,18 @@
     alertBox.classList.remove('hiding');
     alertBox.classList.add('visible');
 
-    resetAudio(donAudio);
-    resetAudio(audioEl);
+    resetAudio(playerAudio);
 
-    // Сначала играет don-звук, потом — выбранное аудио
-    function playSelected() {
-      if (data.audioUrl) {
-        audioEl.src = data.audioUrl;
-        audioEl.load();
-        audioEl.onended = () => {
-          resetAudio(audioEl, false);
-          scheduleHide(0);
-        };
-        audioEl.onerror = () => {
-          resetAudio(audioEl, false);
-          scheduleHide(0);
-        };
-        audioEl.play().catch(() => {
-          resetAudio(audioEl, false);
-          scheduleHide(0);
-        });
-      } else {
-        scheduleHide(0);
-      }
-    }
-
-    // Пробуем форматы по порядку: mp3 → m4a
-    const DON_SOURCES = [
+    const playlist = [
       '/public/uploads/don.mp3',
       '/public/uploads/don.m4a'
     ];
 
-    function tryPlayDon(sources) {
-      if (sources.length === 0) {
-        console.warn('[don] все форматы не сработали, играем выбранное');
-        playSelected();
-        return;
-      }
-      const src = sources[0];
-      console.log('[don] пробуем:', src);
-
-      resetAudio(donAudio);
-      donAudio.src = src;
-      donAudio.load();
-
-      donAudio.oncanplaythrough = () => {
-        donAudio.oncanplaythrough = null;
-        console.log('[don] canplaythrough:', src);
-      };
-
-      donAudio.onended = () => {
-        resetAudio(donAudio, false);
-        console.log('[don] ended:', src);
-        playSelected();
-      };
-
-      donAudio.onerror = () => {
-        resetAudio(donAudio, false);
-        console.warn('[don] error:', src, donAudio.error);
-        tryPlayDon(sources.slice(1));
-      };
-
-      const p = donAudio.play();
-      if (p !== undefined) {
-        p.then(() => {
-          console.log('[don] play() успешно:', src);
-        }).catch(e => {
-          console.warn('[don] play() rejected:', src, e.message);
-          resetAudio(donAudio, false);
-          tryPlayDon(sources.slice(1));
-        });
-      }
+    if (data.audioUrl) {
+      playlist.push(data.audioUrl);
     }
 
-    tryPlayDon(DON_SOURCES);
+    playPlaylist(playlist, data.audioUrl);
   }
 
   function resetAudio(audio, clearSrc = true) {
@@ -220,6 +156,48 @@
     audio.onerror = null;
     audio.oncanplaythrough = null;
     if (clearSrc) audio.removeAttribute('src');
+  }
+
+  function playPlaylist(sources, selectedAudioUrl) {
+    const queue = Array.from(new Set(sources.filter(Boolean)));
+
+    function playNext() {
+      if (queue.length === 0) {
+        scheduleHide(0);
+        return;
+      }
+
+      const src = queue.shift();
+      const isSelectedAudio = src === selectedAudioUrl;
+
+      resetAudio(playerAudio);
+      playerAudio.src = src;
+      playerAudio.load();
+
+      playerAudio.onended = () => {
+        resetAudio(playerAudio, false);
+        if (isSelectedAudio) {
+          scheduleHide(0);
+          return;
+        }
+        playNext();
+      };
+
+      playerAudio.onerror = () => {
+        resetAudio(playerAudio, false);
+        playNext();
+      };
+
+      const playback = playerAudio.play();
+      if (playback !== undefined) {
+        playback.catch(() => {
+          resetAudio(playerAudio, false);
+          playNext();
+        });
+      }
+    }
+
+    playNext();
   }
 
   function scheduleHide(delay) {
