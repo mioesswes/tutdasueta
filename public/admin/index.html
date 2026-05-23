@@ -32,7 +32,7 @@
     overflow-x: hidden;
   }
 
-  /* ── Login Screen ── */
+  /* ── Login ── */
   #loginScreen {
     position: fixed; inset: 0;
     background: var(--bg);
@@ -56,576 +56,247 @@
     box-shadow: 0 24px 80px rgba(0,0,0,0.5);
   }
 
-  .login-logo {
-    text-align: center;
-    font-size: 40px;
-    margin-bottom: 8px;
-  }
+  .login-logo { text-align: center; font-size: 40px; margin-bottom: 8px; }
+  .login-title { text-align: center; font-size: 22px; font-weight: 800; }
+  .login-sub { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: -16px; }
 
-  .login-title {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--text);
-  }
-
-  .login-sub {
-    text-align: center;
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-top: -16px;
-  }
-
-  .code-inputs {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-  }
+  .code-inputs { display: flex; gap: 10px; justify-content: center; }
 
   .code-input {
-    width: 64px;
-    height: 72px;
+    width: 64px; height: 72px;
     background: var(--bg3);
     border: 2px solid var(--border);
     border-radius: 12px;
     color: var(--text);
     font-family: 'Space Mono', monospace;
-    font-size: 28px;
-    font-weight: 700;
+    font-size: 28px; font-weight: 700;
     text-align: center;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
+  .code-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,107,53,0.15); }
+  .code-input.filled { border-color: var(--accent2); }
 
-  .code-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(255,107,53,0.15);
-  }
-
-  .code-input.filled {
-    border-color: var(--accent2);
-  }
-
-  .login-error {
-    text-align: center;
-    font-size: 13px;
-    color: var(--red);
-    min-height: 18px;
-    font-family: 'Space Mono', monospace;
-  }
+  .login-error { text-align: center; font-size: 13px; color: var(--red); min-height: 18px; font-family: 'Space Mono', monospace; }
 
   .btn-login {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 14px;
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.15s;
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; padding: 14px;
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: background 0.2s, transform 0.15s;
   }
   .btn-login:hover { background: #ff8555; transform: translateY(-1px); }
-  .btn-login:active { transform: translateY(0); }
 
-  /* ── Main App ── */
-  #app {
-    display: none;
-    flex-direction: row;
-    min-height: 100vh;
-  }
+  /* ── App ── */
+  #app { display: none; flex-direction: row; min-height: 100vh; }
 
-  /* Sidebar */
   .sidebar {
     width: 260px;
     background: var(--bg2);
     border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow-y: auto;
+    display: flex; flex-direction: column;
+    position: sticky; top: 0;
+    height: 100vh; overflow-y: auto;
     flex-shrink: 0;
   }
 
-  .sidebar-header {
-    padding: 24px 20px 16px;
-    border-bottom: 1px solid var(--border);
-  }
+  .sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .sidebar-title { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: 'Space Mono', monospace; }
 
-  .sidebar-logo {
-    font-size: 13px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .sidebar-title {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 4px;
-    font-family: 'Space Mono', monospace;
-  }
-
-  .sidebar-section {
-    padding: 16px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-section-title {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--text-muted);
-    padding: 0 8px;
-    margin-bottom: 8px;
-  }
+  .sidebar-section { padding: 16px 12px; border-bottom: 1px solid var(--border); }
+  .sidebar-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); padding: 0 8px; margin-bottom: 8px; }
 
   .streamer-btn {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: background 0.15s, color 0.15s;
-    text-align: left;
+    width: 100%; background: transparent; border: none;
+    border-radius: 8px; padding: 10px 12px;
+    color: var(--text); font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: background 0.15s; text-align: left;
   }
-
   .streamer-btn:hover { background: var(--bg3); }
-  .streamer-btn.active {
-    background: rgba(255,107,53,0.12);
-    color: var(--accent);
-  }
-
-  .streamer-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--border-hover);
-    flex-shrink: 0;
-    transition: background 0.2s;
-  }
+  .streamer-btn.active { background: rgba(255,107,53,0.12); color: var(--accent); }
+  .streamer-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border-hover); flex-shrink: 0; }
   .streamer-btn.active .streamer-dot { background: var(--accent); }
 
-  .sidebar-footer {
-    margin-top: auto;
-    padding: 16px 20px;
-    border-top: 1px solid var(--border);
-  }
-
+  .sidebar-footer { padding: 16px 12px; margin-top: auto; border-top: 1px solid var(--border); }
   .btn-logout {
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 16px;
-    color: var(--text-muted);
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    width: 100%;
-    transition: all 0.2s;
+    width: 100%; background: transparent;
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px; color: var(--text-muted);
+    font-family: 'Syne', sans-serif; font-size: 13px;
+    cursor: pointer; transition: all 0.15s;
   }
   .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
-  /* Main content */
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-  }
+  /* ── Main ── */
+  main { flex: 1; overflow-y: auto; padding: 32px; }
 
-  .main-header {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 20px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .main-title {
-    font-size: 20px;
-    font-weight: 800;
-  }
+  .main-header { margin-bottom: 28px; }
+  .main-header h1 { font-size: 26px; font-weight: 800; }
+  .main-header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-family: 'Space Mono', monospace; }
 
   .widget-url-box {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    color: var(--accent2);
-    cursor: pointer;
-    transition: border-color 0.2s;
-    max-width: 400px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    display: inline-block;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    font-family: 'Space Mono', monospace; font-size: 12px;
+    color: var(--accent2); cursor: pointer;
+    max-width: 500px; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+    margin-top: 10px; transition: border-color 0.2s;
   }
   .widget-url-box:hover { border-color: var(--accent2); }
 
-  .content {
-    padding: 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    flex: 1;
-  }
-
-  /* Cards */
   .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-  }
-
-  .card-title {
-    font-size: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--text-muted);
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
     margin-bottom: 20px;
+  }
+  .card-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 20px; }
+
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+  .form-input {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    color: var(--text); font-family: 'Space Mono', monospace; font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+    width: 100%;
+  }
+  .form-input:focus { border-color: var(--accent); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ── Style editor ── */
+  .style-editor { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .style-panel { background: var(--bg3); border-radius: 10px; padding: 16px; }
+  .style-panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+  .style-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .style-row label { font-size: 11px; color: var(--text-muted); width: 90px; flex-shrink: 0; }
+  .style-row input[type="color"] { width: 32px; height: 28px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg2); cursor: pointer; padding: 2px; }
+  .style-row input[type="number"],
+  .style-row input[type="text"],
+  .style-row select {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 8px;
+    color: var(--text); font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    outline: none; flex: 1;
+  }
+  .style-row input:focus, .style-row select:focus { border-color: var(--accent); }
+
+  /* ── Preview — ИДЕНТИЧНО виджету ── */
+  .preview-box {
+    background: #1a1a2e;
+    border-radius: 10px;
+    padding: 20px;
+    min-height: 80px;
     display: flex;
-    align-items: center;
-    gap: 8px;
+    align-items: flex-start;
+    justify-content: center;
   }
 
-  /* Form elements */
-  .form-group {
+  /* Контейнер как в виджете — без фона, без рамки */
+  .preview-alert {
+    width: 100%;
+    max-width: 560px;
+    padding: 10px 16px;
     display: flex;
     flex-direction: column;
     gap: 6px;
   }
 
-  .form-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-muted);
+  /* Стили текста совпадают с виджетом */
+  #previewText1 {
+    font-family: Arial, sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.2;
+    word-break: break-word;
   }
 
-  .form-input {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    width: 100%;
-  }
-  .form-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+  #previewText2 {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.4;
+    word-break: break-word;
   }
 
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  /* Style editor */
-  .style-editor {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-
-  .style-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .style-panel-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 8px;
-  }
-
-  .style-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .style-row label {
-    font-size: 12px;
-    color: var(--text-muted);
-    width: 90px;
-    flex-shrink: 0;
-  }
-
-  .style-row input[type="color"] {
-    width: 36px;
-    height: 28px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--bg3);
-    cursor: pointer;
-    padding: 2px;
-    flex-shrink: 0;
-  }
-
-  .style-row input[type="number"],
-  .style-row input[type="text"],
-  .style-row select {
-    flex: 1;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 10px;
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .style-row input:focus, .style-row select:focus {
-    border-color: var(--accent);
-  }
-
-  /* Audio section */
+  /* ── Audio ── */
   .audio-zone {
     border: 2px dashed var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
+    border-radius: 10px; padding: 20px;
+    text-align: center; cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
-    cursor: pointer;
   }
-  .audio-zone:hover, .audio-zone.dragover {
-    border-color: var(--accent);
-    background: rgba(255,107,53,0.05);
-  }
+  .audio-zone:hover, .audio-zone.dragover { border-color: var(--accent); background: rgba(255,107,53,0.05); }
   .audio-zone-text { font-size: 13px; color: var(--text-muted); }
 
-  .audio-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 12px;
-    max-height: 180px;
-    overflow-y: auto;
-  }
-
+  .audio-list { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
   .audio-item {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px; cursor: pointer;
+    transition: border-color 0.15s;
   }
-  .audio-item:hover { border-color: var(--accent); }
+  .audio-item:hover { border-color: var(--border-hover); }
   .audio-item.selected { border-color: var(--accent2); background: rgba(67,170,139,0.08); }
-
-  .audio-item-name {
-    flex: 1;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .audio-item-name { flex: 1; font-size: 12px; font-family: 'Space Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .audio-play-btn, .audio-del-btn {
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 6px; width: 28px; height: 28px;
+    cursor: pointer; color: var(--text-muted); font-size: 11px;
+    transition: all 0.15s; flex-shrink: 0;
   }
+  .audio-play-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .audio-del-btn:hover { border-color: var(--red); color: var(--red); }
 
-  .audio-play-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 16px;
-    padding: 4px;
-    border-radius: 4px;
-    transition: color 0.2s;
-    flex-shrink: 0;
-  }
-  .audio-play-btn:hover { color: var(--accent2); }
-
-  .audio-del-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 14px;
-    padding: 4px;
-    border-radius: 4px;
-    transition: color 0.2s;
-    flex-shrink: 0;
-  }
-  .audio-del-btn:hover { color: var(--red); }
-
-  /* Preview */
-  .preview-box {
-    background: #0d0d1a;
-    border-radius: 10px;
-    padding: 20px;
-    min-height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .preview-notification {
-    background: rgba(10,10,20,0.88);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 10px;
-    padding: 16px 20px;
-    width: 100%;
-    max-width: 500px;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .preview-notification::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #ff6b35, #f7c59f, #90be6d, #43aa8b);
-    background-size: 300%;
-    animation: gradientShift 3s linear infinite;
-  }
-
-  @keyframes gradientShift {
-    0% { background-position: 0%; }
-    100% { background-position: 300%; }
-  }
-
-  .preview-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .preview-icon { font-size: 18px; }
-  #previewText1 { font-size: 20px; font-weight: 800; color: #fff; }
-  #previewText2 { font-size: 14px; color: rgba(255,255,255,0.7); }
-
-  /* Buttons */
-  .btn-row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
   .btn {
-    border: none;
-    border-radius: 10px;
-    padding: 13px 24px;
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    border: none; border-radius: 8px; padding: 12px 20px;
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
   }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-    flex: 1;
-  }
-  .btn-primary:hover { background: #ff8555; transform: translateY(-1px); }
-  .btn-primary:active { transform: translateY(0); }
-  .btn-primary:disabled { background: #555; cursor: not-allowed; transform: none; }
-
-  .btn-secondary {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    color: var(--text);
-  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #ff8555; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
   .btn-secondary:hover { border-color: var(--border-hover); }
 
-  .btn-success {
-    background: var(--accent2);
-    color: #fff;
-  }
-  .btn-success:hover { background: #55c9a8; transform: translateY(-1px); }
+  /* ── Streamer edit ── */
+  .streamer-edit-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-  /* Toast */
+  /* ── Styles saved badge ── */
+  .styles-saved-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(67,170,139,0.15); border: 1px solid rgba(67,170,139,0.3);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 11px; color: var(--accent2);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* ── Toast ── */
   #toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 999;
-    max-width: 320px;
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 20px;
+    font-size: 14px; font-weight: 600;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transform: translateY(20px); opacity: 0;
+    transition: all 0.3s; pointer-events: none; z-index: 9999;
   }
   #toast.show { transform: translateY(0); opacity: 1; }
-  #toast.success { border-color: var(--green); }
-  #toast.error { border-color: var(--red); }
+  #toast.success { border-color: rgba(46,213,115,0.4); color: var(--green); }
+  #toast.error { border-color: rgba(255,71,87,0.4); color: var(--red); }
 
-  /* Streamer edit */
-  .streamer-edit-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 16px;
-    background: var(--bg3);
-    border-radius: 8px;
-    margin-top: 8px;
-  }
-
-  .badge {
-    font-size: 10px;
-    font-family: 'Space Mono', monospace;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: rgba(255,107,53,0.15);
-    color: var(--accent);
-    border: 1px solid rgba(255,107,53,0.3);
-  }
-
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
   @media (max-width: 900px) {
@@ -633,23 +304,20 @@
     .form-grid { grid-template-columns: 1fr; }
     .sidebar { width: 220px; }
   }
-
   @media (max-width: 640px) {
-    #app { flex-direction: column; }
+    main { padding: 16px; }
     .sidebar { width: 100%; height: auto; position: relative; }
-    .content { padding: 16px; }
-    .main-header { padding: 16px; }
+    #app { flex-direction: column; }
   }
 </style>
 </head>
 <body>
 
-<!-- Login Screen -->
 <div id="loginScreen">
   <div class="login-card">
-    <div class="login-logo">🎮</div>
-    <div class="login-title">Stream Alert Admin</div>
-    <div class="login-sub">Введи код доступа</div>
+    <div class="login-logo">🔔</div>
+    <div class="login-title">Stream Alerts</div>
+    <div class="login-sub">Введите код доступа</div>
     <div class="code-inputs">
       <input class="code-input" maxlength="1" type="password" id="d1" inputmode="numeric">
       <input class="code-input" maxlength="1" type="password" id="d2" inputmode="numeric">
@@ -661,13 +329,11 @@
   </div>
 </div>
 
-<!-- Main App -->
 <div id="app">
-  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo">🔔 Alert Panel</div>
-      <div class="sidebar-title">Admin Dashboard</div>
+      <div class="sidebar-title">stream alerts v2</div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-section-title">Стримеры</div>
@@ -678,45 +344,41 @@
     </div>
   </aside>
 
-  <!-- Main -->
-  <main class="main">
+  <main>
     <div class="main-header">
-      <div>
-        <div class="main-title" id="mainTitle">Выбери стримера</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="mainSub">Выбери стримера слева для работы</div>
-      </div>
-      <div id="widgetUrlBox" class="widget-url-box" style="display:none" title="Нажми чтобы скопировать"></div>
+      <h1 id="mainTitle">Выбери стримера</h1>
+      <p id="mainSub">← Выбери стримера из списка слева</p>
+      <div id="widgetUrlBox" class="widget-url-box" style="display:none"></div>
     </div>
 
-    <div class="content" id="mainContent" style="display:none">
+    <div id="mainContent" style="display:none; flex-direction:column; gap:20px">
 
-      <!-- Streamer settings -->
-      <div class="card" id="streamerSettingsCard">
-        <div class="card-title">⚙️ Настройки стримера</div>
+      <!-- Редактирование стримера -->
+      <div class="card">
+        <div class="card-title">✏️ Стример</div>
         <div class="streamer-edit-form">
           <div class="form-group">
             <div class="form-label">Имя</div>
             <input class="form-input" id="editName" placeholder="Имя стримера">
           </div>
           <div class="form-group">
-            <div class="form-label">Slug (ID для URL)</div>
-            <input class="form-input" id="editSlug" placeholder="streamer1">
+            <div class="form-label">Widget ID (авто)</div>
+            <input class="form-input" id="editId" readonly style="opacity:0.5;cursor:not-allowed">
           </div>
         </div>
         <div style="margin-top:12px">
-          <button class="btn btn-secondary" id="saveStreamerBtn">💾 Сохранить</button>
+          <button class="btn btn-secondary" id="saveStreamerBtn">💾 Сохранить имя</button>
         </div>
       </div>
 
-      <!-- Send alert -->
+      <!-- Отправить уведомление -->
       <div class="card">
         <div class="card-title">📤 Отправить уведомление</div>
 
-        <!-- Texts -->
         <div class="form-grid" style="margin-bottom:20px">
           <div class="form-group">
             <div class="form-label">Строка 1 (заголовок)</div>
-            <input class="form-input" id="text1Input" placeholder="Например: Новый подписчик!">
+            <input class="form-input" id="text1Input" placeholder="Новый подписчик!">
           </div>
           <div class="form-group">
             <div class="form-label">Строка 2 (описание)</div>
@@ -724,10 +386,14 @@
           </div>
         </div>
 
-        <!-- Style editor -->
-        <div class="card-title" style="margin-bottom:16px">🎨 Стили текста</div>
+        <!-- Стили — единые для всех стримеров -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+          <div class="card-title" style="margin:0">🎨 Стили текста</div>
+          <span class="styles-saved-badge" id="stylesSavedBadge" style="display:none">✓ Сохранено глобально</span>
+          <small style="color:var(--text-muted);font-size:11px;font-family:'Space Mono',monospace">Единые для всех стримеров</small>
+        </div>
+
         <div class="style-editor">
-          <!-- Text 1 styles -->
           <div class="style-panel">
             <div class="style-panel-title">Строка 1</div>
             <div class="style-row">
@@ -749,7 +415,7 @@
               </select>
             </div>
             <div class="style-row">
-              <label>Тень текста</label>
+              <label>Тень</label>
               <input type="color" id="s1shadow" value="#000000">
               <input type="number" id="s1shadowBlur" value="8" min="0" max="30" style="width:60px">
             </div>
@@ -768,12 +434,11 @@
             </div>
           </div>
 
-          <!-- Text 2 styles -->
           <div class="style-panel">
             <div class="style-panel-title">Строка 2</div>
             <div class="style-row">
               <label>Цвет текста</label>
-              <input type="color" id="s2color" value="#b0b0c8">
+              <input type="color" id="s2color" value="#cccccc">
             </div>
             <div class="style-row">
               <label>Размер (px)</label>
@@ -789,7 +454,7 @@
               </select>
             </div>
             <div class="style-row">
-              <label>Тень текста</label>
+              <label>Тень</label>
               <input type="color" id="s2shadow" value="#000000">
               <input type="number" id="s2shadowBlur" value="4" min="0" max="30" style="width:60px">
             </div>
@@ -809,26 +474,27 @@
           </div>
         </div>
 
-        <!-- Preview -->
-        <div style="margin-top:20px">
-          <div class="form-label" style="margin-bottom:8px">👁️ Превью</div>
+        <div style="margin-top:12px">
+          <button class="btn btn-secondary" id="saveStylesBtn">💾 Сохранить стили для всех</button>
+        </div>
+
+        <!-- Preview — точь-в-точь как виджет -->
+        <div style="margin-top:24px">
+          <div class="form-label" style="margin-bottom:10px">👁️ ПРЕВЬЮ (точное — как в OBS)</div>
           <div class="preview-box">
-            <div class="preview-notification">
-              <div class="preview-header">
-                <span class="preview-icon">🔔</span>
-                <div id="previewText1">Новый подписчик!</div>
-              </div>
+            <div class="preview-alert">
+              <div id="previewText1">Новый подписчик!</div>
               <div id="previewText2">Спасибо за поддержку!</div>
             </div>
           </div>
         </div>
 
-        <!-- Audio -->
-        <div style="margin-top:20px">
+        <!-- Аудио -->
+        <div style="margin-top:24px">
           <div class="card-title" style="margin-bottom:12px">🎵 Аудио</div>
           <div id="audioDropZone" class="audio-zone">
             <div style="font-size:24px;margin-bottom:6px">🎵</div>
-            <div class="audio-zone-text">Перетащи mp3/wav сюда или нажми чтобы выбрать</div>
+            <div class="audio-zone-text">Перетащи mp3/wav сюда или нажми</div>
             <input type="file" id="audioFileInput" accept=".mp3,.wav,.ogg,.m4a" style="display:none">
           </div>
           <div id="uploadProgress" style="display:none;margin-top:8px;font-size:12px;color:var(--text-muted)">Загружается...</div>
@@ -838,19 +504,16 @@
           </div>
         </div>
 
-        <!-- Send button -->
         <div class="btn-row" style="margin-top:24px">
-          <button class="btn btn-primary" id="sendAlertBtn">
-            🚀 Отправить на стрим
-          </button>
+          <button class="btn btn-primary" id="sendAlertBtn">🚀 Отправить на стрим</button>
           <button class="btn btn-secondary" id="clearBtn">Сбросить</button>
         </div>
       </div>
+
     </div>
   </main>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
@@ -866,6 +529,8 @@ const digits = ['d1','d2','d3','d4'].map(id => document.getElementById(id));
 
 digits.forEach((inp, i) => {
   inp.addEventListener('input', () => {
+    // Только цифры
+    inp.value = inp.value.replace(/\D/g,'').slice(0,1);
     inp.classList.toggle('filled', inp.value.length > 0);
     if (inp.value && i < 3) digits[i+1].focus();
     if (getCode().length === 4) doLogin();
@@ -879,9 +544,16 @@ function getCode() { return digits.map(d => d.value).join(''); }
 
 document.getElementById('loginBtn').addEventListener('click', doLogin);
 
+let loginLocked = false;
+
 async function doLogin() {
+  if (loginLocked) return;
   const code = getCode();
   if (code.length !== 4) return;
+
+  loginLocked = true;
+  document.getElementById('loginBtn').disabled = true;
+
   try {
     const r = await fetch('/api/login', {
       method: 'POST',
@@ -893,6 +565,9 @@ async function doLogin() {
       token = data.token;
       localStorage.setItem('adminToken', token);
       initApp();
+    } else if (r.status === 429) {
+      showLoginError('Слишком много попыток. Подожди 15 мин ⛔');
+      digits.forEach(d => { d.value = ''; d.classList.remove('filled'); });
     } else {
       showLoginError('Неверный код ❌');
       digits.forEach(d => { d.value = ''; d.classList.remove('filled'); });
@@ -900,16 +575,18 @@ async function doLogin() {
     }
   } catch(e) {
     showLoginError('Ошибка сервера');
+  } finally {
+    loginLocked = false;
+    document.getElementById('loginBtn').disabled = false;
   }
 }
 
 function showLoginError(msg) {
   const el = document.getElementById('loginError');
   el.textContent = msg;
-  setTimeout(() => el.textContent = '', 2500);
+  setTimeout(() => el.textContent = '', 3000);
 }
 
-// Check existing token
 async function checkAuth() {
   if (!token) return false;
   try {
@@ -923,6 +600,7 @@ async function initApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   await loadStreamers();
+  await loadGlobalStyles();
   setupLivePreview();
 }
 
@@ -934,13 +612,24 @@ async function loadStreamers() {
   }
 }
 
+async function loadGlobalStyles() {
+  const r = await authFetch('/api/styles');
+  if (r.ok) {
+    const styles = await r.json();
+    if (styles) {
+      applyStylesToInputs(styles);
+      document.getElementById('stylesSavedBadge').style.display = 'inline-flex';
+    }
+  }
+}
+
 function renderStreamerList() {
   const list = document.getElementById('streamerList');
   list.innerHTML = '';
   streamers.forEach(s => {
     const btn = document.createElement('button');
     btn.className = 'streamer-btn' + (currentStreamer?.id === s.id ? ' active' : '');
-    btn.innerHTML = `<span class="streamer-dot"></span>${s.name}`;
+    btn.innerHTML = `<span class="streamer-dot"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(s.name)}</span>`;
     btn.onclick = () => selectStreamer(s);
     list.appendChild(btn);
   });
@@ -954,31 +643,31 @@ function selectStreamer(s) {
   document.getElementById('mainSub').textContent = 'Готово к отправке уведомлений';
   document.getElementById('mainContent').style.display = 'flex';
 
-  const widgetUrl = `${location.origin}/widget/${s.slug || s.id}`;
+  const widgetUrl = `${location.origin}/widget/${s.id}`;
   const urlBox = document.getElementById('widgetUrlBox');
-  urlBox.style.display = 'block';
+  urlBox.style.display = 'inline-block';
   urlBox.textContent = widgetUrl;
-  urlBox.title = 'Нажми чтобы скопировать: ' + widgetUrl;
+  urlBox.title = 'Нажми чтобы скопировать';
   urlBox.onclick = () => {
     navigator.clipboard.writeText(widgetUrl);
     toast('URL скопирован ✅', 'success');
   };
 
   document.getElementById('editName').value = s.name;
-  document.getElementById('editSlug').value = s.slug || s.id;
+  document.getElementById('editId').value = s.id;
 
   loadAudios();
 }
 
-// Save streamer
+// ─── Save streamer name ────────────────────────────────────────────────────
 document.getElementById('saveStreamerBtn').addEventListener('click', async () => {
   if (!currentStreamer) return;
-  const newSlug = document.getElementById('editSlug').value.trim();
   const newName = document.getElementById('editName').value.trim();
-  const oldSlug = currentStreamer.slug || currentStreamer.id;
+  if (!newName) return toast('Введи имя', 'error');
+
   const r = await authFetch(`/api/streamers/${currentStreamer.id}`, {
     method: 'PUT',
-    body: JSON.stringify({ name: newName, slug: newSlug })
+    body: JSON.stringify({ name: newName })
   });
   if (r.ok) {
     const updated = await r.json();
@@ -986,21 +675,25 @@ document.getElementById('saveStreamerBtn').addEventListener('click', async () =>
     streamers[idx] = updated;
     currentStreamer = updated;
     renderStreamerList();
-    // Update header and widget URL box without full re-select
     document.getElementById('mainTitle').textContent = updated.name;
-    const newWidgetUrl = `${location.origin}/widget/${updated.slug || updated.id}`;
-    const urlBox = document.getElementById('widgetUrlBox');
-    urlBox.textContent = newWidgetUrl;
-    urlBox.title = 'Нажми чтобы скопировать: ' + newWidgetUrl;
-    if (oldSlug !== newSlug) {
-      toast('Сохранено ✅ Обнови URL в OBS!', 'success');
-    } else {
-      toast('Сохранено ✅', 'success');
-    }
+    toast('Имя сохранено ✅', 'success');
   }
 });
 
-// ─── Audio ──────────────────────────────────────────────────────────────────
+// ─── Global styles save ────────────────────────────────────────────────────
+document.getElementById('saveStylesBtn').addEventListener('click', async () => {
+  const styles = collectStyles();
+  const r = await authFetch('/api/styles', {
+    method: 'POST',
+    body: JSON.stringify({ styles })
+  });
+  if (r.ok) {
+    document.getElementById('stylesSavedBadge').style.display = 'inline-flex';
+    toast('Стили сохранены для всех стримеров ✅', 'success');
+  }
+});
+
+// ─── Audio ─────────────────────────────────────────────────────────────────
 const audioDropZone = document.getElementById('audioDropZone');
 const audioFileInput = document.getElementById('audioFileInput');
 
@@ -1055,7 +748,7 @@ function renderAudioList(audios) {
     const item = document.createElement('div');
     item.className = 'audio-item' + (selectedAudioUrl === a.url ? ' selected' : '');
     item.innerHTML = `
-      <span class="audio-item-name" title="${a.filename}">${a.filename}</span>
+      <span class="audio-item-name" title="${escHtml(a.filename)}">${escHtml(a.filename)}</span>
       <button class="audio-play-btn" title="Прослушать">▶</button>
       <button class="audio-del-btn" title="Удалить">✕</button>
     `;
@@ -1080,7 +773,6 @@ function renderAudioList(audios) {
 function selectAudio(url, name) {
   selectedAudioUrl = url;
   updateSelectedAudioUI(name);
-  // Re-render list to update selected state
   loadAudios();
 }
 
@@ -1094,26 +786,23 @@ function updateSelectedAudioUI(name) {
   }
 }
 
-// ─── Live preview ──────────────────────────────────────────────────────────
+// ─── Live preview (точно как виджет) ──────────────────────────────────────
 function setupLivePreview() {
   const text1 = document.getElementById('text1Input');
   const text2 = document.getElementById('text2Input');
-  const prev1 = document.getElementById('previewText1');
-  const prev2 = document.getElementById('previewText2');
 
-  const updatePreview = () => {
-    prev1.textContent = text1.value || 'Строка 1';
-    prev2.textContent = text2.value || 'Строка 2';
+  const update = () => {
+    document.getElementById('previewText1').textContent = text1.value || 'Строка 1';
+    document.getElementById('previewText2').textContent = text2.value || 'Строка 2';
     applyPreviewStyles();
   };
 
-  text1.addEventListener('input', updatePreview);
-  text2.addEventListener('input', updatePreview);
+  text1.addEventListener('input', update);
+  text2.addEventListener('input', update);
 
-  // Style inputs
-  const styleInputs = ['s1color','s1size','s1weight','s1shadow','s1shadowBlur','s1stroke','s1strokeW','s1align',
-                       's2color','s2size','s2weight','s2shadow','s2shadowBlur','s2stroke','s2strokeW','s2align'];
-  styleInputs.forEach(id => {
+  const styleIds = ['s1color','s1size','s1weight','s1shadow','s1shadowBlur','s1stroke','s1strokeW','s1align',
+                    's2color','s2size','s2weight','s2shadow','s2shadowBlur','s2stroke','s2strokeW','s2align'];
+  styleIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', applyPreviewStyles);
   });
@@ -1125,35 +814,61 @@ function applyPreviewStyles() {
 
   const getShadow = (colorId, blurId) => {
     const c = document.getElementById(colorId)?.value || '#000';
-    const b = document.getElementById(blurId)?.value || 0;
-    return +b > 0 ? `0 2px ${b}px ${c}` : '';
+    const b = +document.getElementById(blurId)?.value || 0;
+    return b > 0 ? `0 2px ${b}px ${c}` : '';
   };
   const getStroke = (colorId, widthId) => {
     const w = +document.getElementById(widthId)?.value || 0;
-    if (w <= 0) return '';
-    return `${w}px ${document.getElementById(colorId)?.value || '#000'}`;
+    return w > 0 ? `${w}px ${document.getElementById(colorId)?.value || '#000'}` : '';
   };
 
-  p1.style.color = document.getElementById('s1color')?.value || '';
+  // Arial — как в виджете
+  p1.style.fontFamily = 'Arial, sans-serif';
+  p1.style.color = document.getElementById('s1color')?.value || '#fff';
   p1.style.fontSize = (document.getElementById('s1size')?.value || 22) + 'px';
-  p1.style.fontWeight = document.getElementById('s1weight')?.value || '';
+  p1.style.fontWeight = document.getElementById('s1weight')?.value || '800';
   p1.style.textShadow = getShadow('s1shadow', 's1shadowBlur');
   p1.style.webkitTextStroke = getStroke('s1stroke', 's1strokeW');
-  p1.style.textAlign = document.getElementById('s1align')?.value || '';
+  p1.style.textAlign = document.getElementById('s1align')?.value || 'left';
 
-  p2.style.color = document.getElementById('s2color')?.value || '';
+  p2.style.fontFamily = 'Arial, sans-serif';
+  p2.style.color = document.getElementById('s2color')?.value || 'rgba(255,255,255,0.85)';
   p2.style.fontSize = (document.getElementById('s2size')?.value || 16) + 'px';
-  p2.style.fontWeight = document.getElementById('s2weight')?.value || '';
+  p2.style.fontWeight = document.getElementById('s2weight')?.value || '500';
   p2.style.textShadow = getShadow('s2shadow', 's2shadowBlur');
   p2.style.webkitTextStroke = getStroke('s2stroke', 's2strokeW');
-  p2.style.textAlign = document.getElementById('s2align')?.value || '';
+  p2.style.textAlign = document.getElementById('s2align')?.value || 'left';
+}
+
+function applyStylesToInputs(styles) {
+  if (!styles) return;
+  const s1 = styles.text1 || {};
+  const s2 = styles.text2 || {};
+  const setV = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+  setV('s1color', s1.color);
+  setV('s1size', s1.fontSize);
+  setV('s1weight', s1.fontWeight);
+  setV('s1align', s1.textAlign);
+  if (s1._shadowColor) setV('s1shadow', s1._shadowColor);
+  if (s1._shadowBlur) setV('s1shadowBlur', s1._shadowBlur);
+  if (s1._strokeColor) setV('s1stroke', s1._strokeColor);
+  setV('s1strokeW', s1.strokeWidth);
+  setV('s2color', s2.color);
+  setV('s2size', s2.fontSize);
+  setV('s2weight', s2.fontWeight);
+  setV('s2align', s2.textAlign);
+  if (s2._shadowColor) setV('s2shadow', s2._shadowColor);
+  if (s2._shadowBlur) setV('s2shadowBlur', s2._shadowBlur);
+  if (s2._strokeColor) setV('s2stroke', s2._strokeColor);
+  setV('s2strokeW', s2.strokeWidth);
+  applyPreviewStyles();
 }
 
 function collectStyles() {
   const getShadow = (colorId, blurId) => {
     const c = document.getElementById(colorId)?.value || '#000';
     const b = +document.getElementById(blurId)?.value || 0;
-    return +b > 0 ? `0 2px ${b}px ${c}` : '';
+    return b > 0 ? `0 2px ${b}px ${c}` : '';
   };
   return {
     text1: {
@@ -1161,23 +876,29 @@ function collectStyles() {
       fontSize: +document.getElementById('s1size').value,
       fontWeight: document.getElementById('s1weight').value,
       textShadow: getShadow('s1shadow', 's1shadowBlur'),
-      stroke: document.getElementById('s1strokeW').value > 0 ? document.getElementById('s1stroke').value : '',
+      stroke: +document.getElementById('s1strokeW').value > 0 ? document.getElementById('s1stroke').value : '',
       strokeWidth: +document.getElementById('s1strokeW').value,
       textAlign: document.getElementById('s1align').value,
+      _shadowColor: document.getElementById('s1shadow').value,
+      _shadowBlur: document.getElementById('s1shadowBlur').value,
+      _strokeColor: document.getElementById('s1stroke').value,
     },
     text2: {
       color: document.getElementById('s2color').value,
       fontSize: +document.getElementById('s2size').value,
       fontWeight: document.getElementById('s2weight').value,
       textShadow: getShadow('s2shadow', 's2shadowBlur'),
-      stroke: document.getElementById('s2strokeW').value > 0 ? document.getElementById('s2stroke').value : '',
+      stroke: +document.getElementById('s2strokeW').value > 0 ? document.getElementById('s2stroke').value : '',
       strokeWidth: +document.getElementById('s2strokeW').value,
       textAlign: document.getElementById('s2align').value,
+      _shadowColor: document.getElementById('s2shadow').value,
+      _shadowBlur: document.getElementById('s2shadowBlur').value,
+      _strokeColor: document.getElementById('s2stroke').value,
     }
   };
 }
 
-// ─── Send alert ──────────────────────────────────────────────────────────────
+// ─── Send alert ────────────────────────────────────────────────────────────
 document.getElementById('sendAlertBtn').addEventListener('click', async () => {
   if (!currentStreamer) return toast('Выбери стримера', 'error');
   const t1 = document.getElementById('text1Input').value.trim();
@@ -1188,6 +909,9 @@ document.getElementById('sendAlertBtn').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = '⏳ Отправка...';
 
+  // Используем глобальные стили или текущие из формы
+  const styles = collectStyles();
+
   try {
     const r = await authFetch('/api/alert', {
       method: 'POST',
@@ -1196,7 +920,7 @@ document.getElementById('sendAlertBtn').addEventListener('click', async () => {
         text1: t1,
         text2: t2,
         audioUrl: selectedAudioUrl,
-        styles: collectStyles()
+        styles
       })
     });
     const data = await r.json();
@@ -1204,7 +928,7 @@ document.getElementById('sendAlertBtn').addEventListener('click', async () => {
       if (data.widgetCount > 0) {
         toast(`✅ Отправлено на ${data.widgetCount} виджет(а)`, 'success');
       } else {
-        toast('⚠️ Нет подключённых виджетов', 'error');
+        toast('⚠️ Нет подключённых виджетов (OBS не открыт?)', 'error');
       }
     } else {
       toast('Ошибка: ' + (data.error || 'Unknown'), 'error');
@@ -1227,7 +951,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   document.getElementById('previewText2').textContent = 'Строка 2';
 });
 
-// ─── Logout ─────────────────────────────────────────────────────────────────
+// ─── Logout ────────────────────────────────────────────────────────────────
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   await authFetch('/api/logout', { method: 'POST' }).catch(() => {});
   localStorage.removeItem('adminToken');
@@ -1238,13 +962,17 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
   currentStreamer = null;
 });
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ───────────────────────────────────────────────────────────────
 async function authFetch(url, opts = {}) {
   const headers = { 'x-admin-token': token, ...(opts.headers || {}) };
   if (!(opts.body instanceof FormData)) {
     headers['Content-Type'] = headers['Content-Type'] || 'application/json';
   }
   return fetch(url, { ...opts, headers });
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 let toastTimer;
@@ -1256,7 +984,7 @@ function toast(msg, type = 'success') {
   toastTimer = setTimeout(() => el.className = '', 3000);
 }
 
-// ─── Startup ──────────────────────────────────────────────────────────────────
+// ─── Startup ───────────────────────────────────────────────────────────────
 (async () => {
   if (token && await checkAuth()) {
     initApp();

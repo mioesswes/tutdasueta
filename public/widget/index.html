@@ -9,7 +9,7 @@
   body {
     background: transparent;
     overflow: hidden;
-    font-family: 'Nunito', sans-serif;
+    font-family: Arial, sans-serif;
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -28,7 +28,6 @@
   .alert-box {
     background: transparent;
     border: none;
-    border-radius: 0;
     padding: 10px 16px;
     display: flex;
     flex-direction: column;
@@ -54,6 +53,7 @@
   }
 
   .alert-text1 {
+    font-family: Arial, sans-serif;
     font-size: 22px;
     font-weight: 800;
     color: #ffffff;
@@ -64,6 +64,7 @@
   }
 
   .alert-text2 {
+    font-family: Arial, sans-serif;
     font-size: 16px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.85);
@@ -87,8 +88,6 @@
   #status.disconnected { opacity: 1; background: #ff4444; }
   #status.connected { opacity: 0; }
 </style>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
 <div id="alert-container">
@@ -107,6 +106,7 @@
   const audioEl = document.getElementById('alertAudio');
   const statusDot = document.getElementById('status');
 
+  // ID стримера из URL: /widget/AbCdEfGhIj
   const streamerId = location.pathname.split('/').filter(Boolean).pop();
 
   let hideTimeout = null;
@@ -140,9 +140,7 @@
     if (data.audioUrl) {
       audioEl.src = data.audioUrl;
       audioEl.load();
-      audioEl.onloadedmetadata = () => {
-        duration = audioEl.duration * 1000;
-      };
+      audioEl.onloadedmetadata = () => { duration = audioEl.duration * 1000; };
       audioEl.onerror = () => scheduleHide(duration);
       audioEl.play().catch(e => console.warn('Audio play failed:', e));
       audioEl.onended = () => scheduleHide(0);
@@ -164,13 +162,14 @@
   }
 
   function applyStyles(el, styles) {
+    // Всегда Arial, нельзя переопределить
+    el.style.fontFamily = 'Arial, sans-serif';
     el.style.fontSize = styles.fontSize ? styles.fontSize + 'px' : '';
     el.style.color = styles.color || '';
     el.style.fontWeight = styles.fontWeight || '';
     el.style.textShadow = styles.textShadow || '';
     el.style.webkitTextStroke = (styles.stroke && styles.strokeWidth > 0)
       ? `${styles.strokeWidth}px ${styles.stroke}` : '';
-    el.style.fontFamily = styles.fontFamily ? `'${styles.fontFamily}', sans-serif` : '';
     el.style.textAlign = styles.textAlign || 'left';
   }
 
@@ -178,7 +177,8 @@
   let ws;
 
   function connect() {
-    ws = new WebSocket(`ws://${WS_HOST}/?streamer=${streamerId}`);
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${proto}//${WS_HOST}/?streamer=${streamerId}`);
     ws.onopen = () => { statusDot.className = 'connected'; };
     ws.onmessage = (event) => {
       try {
@@ -191,11 +191,6 @@
       setTimeout(connect, 3000);
     };
     ws.onerror = () => ws.close();
-
-    const ping = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) ws.ping && ws.ping();
-    }, 25000);
-    ws.addEventListener('close', () => clearInterval(ping));
   }
 
   connect();

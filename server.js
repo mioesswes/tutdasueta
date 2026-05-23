@@ -13,21 +13,60 @@ const wss = new WebSocketServer({ server });
 // ─── Config ───────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 const ADMIN_CODE = '5493';
+// HMAC-секрет для подписи токенов (генерируется раз при старте)
+const TOKEN_SECRET = crypto.randomBytes(64).toString('hex');
 const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
 
-// Ensure uploads dir exists
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-// ─── Session tokens (in-memory, сбрасываются при рестарте) ──────────────────
-const sessions = new Set();
+// ─── Rate limiting для логина ─────────────────────────────────────────────────
+const loginAttempts = new Map(); // ip → { count, resetAt }
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + 15 * 60 * 1000 }); // окно 15 мин
+    return true;
+  }
+  if (entry.count >= 10) return false; // максимум 10 попыток за 15 минут
+  entry.count++;
+  return true;
+}
+
+function resetRateLimit(ip) {
+  loginAttempts.delete(ip);
+}
+
+// ─── Session tokens (подписанные HMAC, in-memory) ─────────────────────────────
+const sessions = new Map(); // token → expiresAt
 
 function generateToken() {
-  return crypto.randomBytes(32).toString('hex');
+  const rand = crypto.randomBytes(32).toString('hex');
+  const sig = crypto.createHmac('sha256', TOKEN_SECRET).update(rand).digest('hex');
+  return `${rand}.${sig}`;
+}
+
+function verifyToken(token) {
+  if (!token || typeof token !== 'string') return false;
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+  const [rand, sig] = parts;
+  const expected = crypto.createHmac('sha256', TOKEN_SECRET).update(rand).digest('hex');
+  // Constant-time compare
+  try {
+    if (!crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex'))) return false;
+  } catch { return false; }
+  const exp = sessions.get(token);
+  if (!exp) return false;
+  if (Date.now() > exp) { sessions.delete(token); return false; }
+  return true;
 }
 
 function isAuth(req) {
-  const token = req.headers['x-admin-token'] || req.query.token;
-  return token && sessions.has(token);
+  // Только из заголовка, НЕ из query string (предотвращаем утечку в логи)
+  const token = req.headers['x-admin-token'];
+  return verifyToken(token);
 }
 
 function authMiddleware(req, res, next) {
@@ -35,21 +74,47 @@ function authMiddleware(req, res, next) {
   next();
 }
 
-// ─── Streamers data (in-memory + persist to JSON) ────────────────────────────
+// ─── Data (in-memory + persist) ───────────────────────────────────────────────
 const DATA_FILE = path.join(__dirname, 'data.json');
+
+function genStreamerId() {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let id = '';
+  while (id.length < 10) {
+    id += chars[crypto.randomInt(chars.length)];
+  }
+  return id;
+}
+
+function makeDefaultStreamers() {
+  return Array.from({ length: 10 }, (_, i) => ({
+    id: genStreamerId(),
+    name: `Стример ${i + 1}`,
+  }));
+}
 
 function loadData() {
   if (fs.existsSync(DATA_FILE)) {
-    try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); } catch {}
+    try {
+      const d = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+      // Миграция старых streamerN ID → новые
+      if (d.streamers && d.streamers.some(s => /^streamer\d+$/.test(s.id))) {
+        d.streamers = d.streamers.map(s => ({
+          ...s,
+          id: /^streamer\d+$/.test(s.id) ? genStreamerId() : s.id,
+        }));
+        fs.writeFileSync(DATA_FILE, JSON.stringify(d, null, 2));
+      }
+      // Добавить профили до 10 если меньше
+      while (d.streamers.length < 10) {
+        d.streamers.push({ id: genStreamerId(), name: `Стример ${d.streamers.length + 1}` });
+      }
+      return d;
+    } catch {}
   }
   return {
-    streamers: [
-      { id: 'streamer1', name: 'Стример 1', slug: 'streamer1' },
-      { id: 'streamer2', name: 'Стример 2', slug: 'streamer2' },
-      { id: 'streamer3', name: 'Стример 3', slug: 'streamer3' },
-      { id: 'streamer4', name: 'Стример 4', slug: 'streamer4' },
-      { id: 'streamer5', name: 'Стример 5', slug: 'streamer5' },
-    ]
+    streamers: makeDefaultStreamers(),
+    globalStyles: null
   };
 }
 
@@ -59,17 +124,17 @@ function saveData(data) {
 
 let appData = loadData();
 
-// ─── Multer for audio uploads ─────────────────────────────────────────────────
+// ─── Multer ───────────────────────────────────────────────────────────────────
 const storage = multer.diskStorage({
   destination: UPLOADS_DIR,
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase();
     cb(null, `audio_${Date.now()}${ext}`);
   }
 });
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = ['.mp3', '.wav', '.ogg', '.m4a'];
     if (allowed.includes(path.extname(file.originalname).toLowerCase())) cb(null, true);
@@ -77,72 +142,84 @@ const upload = multer({
   }
 });
 
-// ─── WebSocket: per-streamer rooms ───────────────────────────────────────────
-// Map: streamerId → Set of widget WebSocket clients
+// ─── WebSocket ────────────────────────────────────────────────────────────────
 const widgetClients = new Map();
 
 wss.on('connection', (ws, req) => {
   const url = new URL(req.url, `http://localhost`);
   const streamerId = url.searchParams.get('streamer');
 
-  if (!streamerId) { ws.close(1008, 'No streamer ID'); return; }
+  if (!streamerId || typeof streamerId !== 'string' || streamerId.length > 50) {
+    ws.close(1008, 'Invalid streamer ID'); return;
+  }
 
   if (!widgetClients.has(streamerId)) widgetClients.set(streamerId, new Set());
   widgetClients.get(streamerId).add(ws);
 
-  console.log(`[WS] Widget connected for streamer: ${streamerId} (total: ${widgetClients.get(streamerId).size})`);
+  console.log(`[WS] Widget connected: ${streamerId} (total: ${widgetClients.get(streamerId).size})`);
 
   ws.on('close', () => {
     widgetClients.get(streamerId)?.delete(ws);
-    console.log(`[WS] Widget disconnected for streamer: ${streamerId}`);
   });
 
   ws.on('error', (err) => console.error('[WS Error]', err.message));
 
-  // Send ping every 25s to keep alive
   const pingInterval = setInterval(() => {
     if (ws.readyState === WebSocket.OPEN) ws.ping();
   }, 25000);
-
   ws.on('close', () => clearInterval(pingInterval));
 });
 
 function broadcastToStreamer(streamerId, payload) {
   const clients = widgetClients.get(streamerId);
-  if (!clients || clients.size === 0) {
-    console.log(`[Broadcast] No widgets connected for: ${streamerId}`);
-    return 0;
-  }
+  if (!clients || clients.size === 0) return 0;
   const message = JSON.stringify(payload);
   let sent = 0;
   clients.forEach(ws => {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(message);
-      sent++;
-    }
+    if (ws.readyState === WebSocket.OPEN) { ws.send(message); sent++; }
   });
-  console.log(`[Broadcast] Alert sent to ${sent} widget(s) for streamer: ${streamerId}`);
+  console.log(`[Broadcast] Alert sent to ${sent} widget(s) for: ${streamerId}`);
   return sent;
 }
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
-app.use(express.json());
+app.use(express.json({ limit: '64kb' }));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/widget', express.static(path.join(__dirname, 'public', 'widget')));
 app.use('/admin', express.static(path.join(__dirname, 'public', 'admin')));
 
-// ─── Auth routes ──────────────────────────────────────────────────────────────
+// Запрет доступа к data.json и uploads через /public если нужно скрыть
+// (оставляем uploads открытыми — нужны для виджета)
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 app.post('/api/login', (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+
+  if (!checkRateLimit(ip)) {
+    console.log(`[Auth] Rate limit exceeded for IP: ${ip}`);
+    return res.status(429).json({ error: 'Too many attempts. Wait 15 minutes.' });
+  }
+
   const { code } = req.body;
-  if (code === ADMIN_CODE) {
+
+  // Валидация: код должен быть строкой 4 цифры
+  if (!code || typeof code !== 'string' || !/^\d{4}$/.test(code)) {
+    return res.status(400).json({ error: 'Invalid code format' });
+  }
+
+  // Constant-time compare
+  const codeBuf = Buffer.from(code.padEnd(64));
+  const adminBuf = Buffer.from(ADMIN_CODE.padEnd(64));
+  const match = crypto.timingSafeEqual(codeBuf, adminBuf);
+
+  if (match) {
+    resetRateLimit(ip);
     const token = generateToken();
-    sessions.add(token);
-    // Auto-expire after 8 hours
-    setTimeout(() => sessions.delete(token), 8 * 60 * 60 * 1000);
-    console.log(`[Auth] Admin logged in, token issued`);
+    sessions.set(token, Date.now() + 8 * 60 * 60 * 1000);
+    console.log(`[Auth] Admin logged in from ${ip}`);
     res.json({ token });
   } else {
-    console.log(`[Auth] Failed login attempt`);
+    console.log(`[Auth] Failed login from ${ip}`);
     res.status(403).json({ error: 'Wrong code' });
   }
 });
@@ -160,23 +237,43 @@ app.get('/api/streamers', authMiddleware, (req, res) => {
 
 app.put('/api/streamers/:id', authMiddleware, (req, res) => {
   const { id } = req.params;
-  const { name, slug } = req.body;
+  const { name } = req.body;
+
+  // Валидация
+  if (!name || typeof name !== 'string' || name.length > 100) {
+    return res.status(400).json({ error: 'Invalid name' });
+  }
+
   const idx = appData.streamers.findIndex(s => s.id === id);
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  appData.streamers[idx] = { ...appData.streamers[idx], name, slug };
+
+  appData.streamers[idx] = { ...appData.streamers[idx], name: name.trim() };
   saveData(appData);
   res.json(appData.streamers[idx]);
 });
 
-// ─── Audio upload ─────────────────────────────────────────────────────────────
+// ─── Global styles ────────────────────────────────────────────────────────────
+app.get('/api/styles', authMiddleware, (req, res) => {
+  res.json(appData.globalStyles || null);
+});
+
+app.post('/api/styles', authMiddleware, (req, res) => {
+  const { styles } = req.body;
+  if (!styles || typeof styles !== 'object') {
+    return res.status(400).json({ error: 'Invalid styles' });
+  }
+  appData.globalStyles = styles;
+  saveData(appData);
+  res.json({ ok: true });
+});
+
+// ─── Audio ────────────────────────────────────────────────────────────────────
 app.post('/api/upload-audio', authMiddleware, upload.single('audio'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file' });
   const url = `/public/uploads/${req.file.filename}`;
-  console.log(`[Upload] Audio uploaded: ${req.file.filename}`);
   res.json({ url, filename: req.file.filename });
 });
 
-// List uploaded audios
 app.get('/api/audios', authMiddleware, (req, res) => {
   const files = fs.readdirSync(UPLOADS_DIR)
     .filter(f => /\.(mp3|wav|ogg|m4a)$/i.test(f))
@@ -185,9 +282,10 @@ app.get('/api/audios', authMiddleware, (req, res) => {
   res.json(files);
 });
 
-// Delete audio
 app.delete('/api/audios/:filename', authMiddleware, (req, res) => {
-  const file = path.join(UPLOADS_DIR, path.basename(req.params.filename));
+  // path traversal protection
+  const filename = path.basename(req.params.filename);
+  const file = path.join(UPLOADS_DIR, filename);
   if (fs.existsSync(file)) fs.unlinkSync(file);
   res.json({ ok: true });
 });
@@ -196,13 +294,35 @@ app.delete('/api/audios/:filename', authMiddleware, (req, res) => {
 app.post('/api/alert', authMiddleware, (req, res) => {
   const { streamerId, text1, text2, audioUrl, styles } = req.body;
 
-  if (!streamerId) return res.status(400).json({ error: 'streamerId required' });
+  if (!streamerId || typeof streamerId !== 'string') {
+    return res.status(400).json({ error: 'streamerId required' });
+  }
+
+  // Проверяем что такой стример существует
+  const streamer = appData.streamers.find(s => s.id === streamerId);
+  if (!streamer) return res.status(404).json({ error: 'Streamer not found' });
+
+  // Валидация текстов
+  if (typeof text1 !== 'string' || typeof text2 !== 'string') {
+    return res.status(400).json({ error: 'Invalid text' });
+  }
+  if (text1.length > 500 || text2.length > 500) {
+    return res.status(400).json({ error: 'Text too long' });
+  }
+
+  // Валидация audioUrl — только наш uploads путь
+  let safeAudioUrl = null;
+  if (audioUrl && typeof audioUrl === 'string') {
+    if (/^\/public\/uploads\/audio_\d+\.(mp3|wav|ogg|m4a)$/i.test(audioUrl)) {
+      safeAudioUrl = audioUrl;
+    }
+  }
 
   const payload = {
     type: 'alert',
-    text1: text1 || '',
-    text2: text2 || '',
-    audioUrl: audioUrl || null,
+    text1: text1.trim(),
+    text2: text2.trim(),
+    audioUrl: safeAudioUrl,
     styles: styles || {},
     timestamp: Date.now()
   };
@@ -211,24 +331,24 @@ app.post('/api/alert', authMiddleware, (req, res) => {
   res.json({ ok: true, widgetCount: sent });
 });
 
-// ─── Widget page route ────────────────────────────────────────────────────────
+// ─── Pages ────────────────────────────────────────────────────────────────────
 app.get('/widget/:streamerId', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'widget', 'index.html'));
 });
 
-// ─── Admin page ───────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
 });
 
-// ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ ok: true, uptime: process.uptime() }));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 server.listen(PORT, () => {
   console.log(`\n🎮 Stream Alert Server running on http://localhost:${PORT}`);
-  console.log(`📺 Widget URL: http://YOUR_IP:${PORT}/widget/streamer1`);
+  console.log(`📺 Widget URL example: http://YOUR_IP:${PORT}/widget/${appData.streamers[0].id}`);
   console.log(`🔧 Admin Panel: http://YOUR_IP:${PORT}/\n`);
+  console.log('Streamer IDs:');
+  appData.streamers.forEach(s => console.log(`  ${s.name}: /widget/${s.id}`));
 });
 
 process.on('uncaughtException', err => console.error('[Uncaught]', err));
