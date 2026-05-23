@@ -135,18 +135,7 @@
     alertBox.classList.remove('hiding');
     alertBox.classList.add('visible');
 
-    resetAudio(playerAudio);
-
-    const playlist = [
-      '/public/uploads/don.mp3',
-      '/public/uploads/don.m4a'
-    ];
-
-    if (data.audioUrl) {
-      playlist.push(data.audioUrl);
-    }
-
-    playPlaylist(playlist, data.audioUrl);
+    playAlertSequence(data.audioUrl);
   }
 
   function resetAudio(audio, clearSrc = true) {
@@ -155,49 +144,66 @@
     audio.onended = null;
     audio.onerror = null;
     audio.oncanplaythrough = null;
+    audio.onloadeddata = null;
     if (clearSrc) audio.removeAttribute('src');
   }
 
-  function playPlaylist(sources, selectedAudioUrl) {
-    const queue = Array.from(new Set(sources.filter(Boolean)));
+  function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
-    function playNext() {
-      if (queue.length === 0) {
-        scheduleHide(0);
-        return;
+  function playSource(src) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      let started = false;
+
+      function finish(fn, value) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(startTimeout);
+        resetAudio(playerAudio, false);
+        fn(value);
       }
 
-      const src = queue.shift();
-      const isSelectedAudio = src === selectedAudioUrl;
+      function startPlayback() {
+        if (started || settled) return;
+        started = true;
+        const playback = playerAudio.play();
+        if (playback !== undefined) {
+          playback.catch(err => finish(reject, err));
+        }
+      }
 
       resetAudio(playerAudio);
       playerAudio.src = src;
       playerAudio.load();
 
-      playerAudio.onended = () => {
-        resetAudio(playerAudio, false);
-        if (isSelectedAudio) {
-          scheduleHide(0);
-          return;
-        }
-        playNext();
-      };
+      playerAudio.onended = () => finish(resolve);
+      playerAudio.onerror = () => finish(reject, playerAudio.error || new Error('Audio failed'));
+      playerAudio.onloadeddata = startPlayback;
+      playerAudio.oncanplaythrough = startPlayback;
 
-      playerAudio.onerror = () => {
-        resetAudio(playerAudio, false);
-        playNext();
-      };
+      const startTimeout = setTimeout(startPlayback, 400);
+    });
+  }
 
-      const playback = playerAudio.play();
-      if (playback !== undefined) {
-        playback.catch(() => {
-          resetAudio(playerAudio, false);
-          playNext();
-        });
+  async function playAlertSequence(selectedAudioUrl) {
+    try {
+      try {
+        await playSource('/public/uploads/don.mp3');
+      } catch (firstError) {
+        await playSource('/public/uploads/don.m4a');
       }
-    }
 
-    playNext();
+      if (selectedAudioUrl) {
+        await wait(250);
+        await playSource(selectedAudioUrl);
+      }
+    } catch (err) {
+      console.warn('[alert-audio] sequence error:', err && err.message ? err.message : err);
+    } finally {
+      scheduleHide(0);
+    }
   }
 
   function scheduleHide(delay) {
