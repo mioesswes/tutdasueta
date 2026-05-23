@@ -97,7 +97,7 @@
   </div>
 </div>
 <div id="status"></div>
-<audio id="donAudio" src="/public/uploads/don.m4a" preload="auto"></audio>
+<audio id="donAudio" preload="auto"></audio>
 <audio id="alertAudio" preload="auto"></audio>
 
 <script>
@@ -137,7 +137,7 @@
     alertBox.classList.remove('hiding');
     alertBox.classList.add('visible');
 
-    // Сначала играет don.m4a, потом — выбранное аудио (если есть)
+    // Сначала играет don-звук, потом — выбранное аудио
     function playSelected() {
       if (data.audioUrl) {
         audioEl.src = data.audioUrl;
@@ -150,31 +150,59 @@
       }
     }
 
-    donAudio.onended = null;
-    donAudio.onerror = null;
-    donAudio.currentTime = 0;
+    // Пробуем форматы по порядку: mp3 → m4a
+    const DON_SOURCES = [
+      '/public/uploads/don.mp3',
+      '/public/uploads/don.m4a'
+    ];
 
-    donAudio.onended = () => {
+    function tryPlayDon(sources) {
+      if (sources.length === 0) {
+        console.warn('[don] все форматы не сработали, играем выбранное');
+        playSelected();
+        return;
+      }
+      const src = sources[0];
+      console.log('[don] пробуем:', src);
+
       donAudio.onended = null;
       donAudio.onerror = null;
-      playSelected();
-    };
-    donAudio.onerror = () => {
-      donAudio.onended = null;
-      donAudio.onerror = null;
-      console.warn('don.m4a error, skipping to selected audio');
-      playSelected();
-    };
+      donAudio.src = src;
+      donAudio.load();
 
-    const donPromise = donAudio.play();
-    if (donPromise !== undefined) {
-      donPromise.catch(e => {
-        console.warn('don.m4a play() rejected:', e);
+      donAudio.oncanplaythrough = () => {
+        donAudio.oncanplaythrough = null;
+        console.log('[don] canplaythrough:', src);
+      };
+
+      donAudio.onended = () => {
         donAudio.onended = null;
         donAudio.onerror = null;
+        console.log('[don] ended:', src);
         playSelected();
-      });
+      };
+
+      donAudio.onerror = () => {
+        donAudio.onended = null;
+        donAudio.onerror = null;
+        console.warn('[don] ошибка:', src, donAudio.error);
+        tryPlayDon(sources.slice(1));
+      };
+
+      const p = donAudio.play();
+      if (p !== undefined) {
+        p.then(() => {
+          console.log('[don] play() успешно:', src);
+        }).catch(e => {
+          console.warn('[don] play() rejected:', src, e.message);
+          donAudio.onended = null;
+          donAudio.onerror = null;
+          tryPlayDon(sources.slice(1));
+        });
+      }
     }
+
+    tryPlayDon(DON_SOURCES);
   }
 
   function scheduleHide(delay) {
