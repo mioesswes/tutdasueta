@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stream Alert Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a24;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.16);
+    --accent: #ff6b35;
+    --accent2: #43aa8b;
+    --text: #f0f0f5;
+    --text-muted: rgba(240,240,245,0.45);
+    --red: #ff4757;
+    --green: #2ed573;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Login Screen ── */
+  #loginScreen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .login-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  }
+
+  .login-logo {
+    text-align: center;
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+
+  .login-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .login-sub {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: -16px;
+  }
+
+  .code-inputs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .code-input {
+    width: 64px;
+    height: 72px;
+    background: var(--bg3);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .code-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255,107,53,0.15);
+  }
+
+  .code-input.filled {
+    border-color: var(--accent2);
+  }
+
+  .login-error {
+    text-align: center;
+    font-size: 13px;
+    color: var(--red);
+    min-height: 18px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .btn-login {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-login:hover { background: #ff8555; transform: translateY(-1px); }
+  .btn-login:active { transform: translateY(0); }
+
+  /* ── Main App ── */
+  #app {
+    display: none;
+    flex-direction: row;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 260px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .sidebar-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-title {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .sidebar-section {
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    padding: 0 8px;
+    margin-bottom: 8px;
+  }
+
+  .streamer-btn {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s, color 0.15s;
+    text-align: left;
+  }
+
+  .streamer-btn:hover { background: var(--bg3); }
+  .streamer-btn.active {
+    background: rgba(255,107,53,0.12);
+    color: var(--accent);
+  }
+
+  .streamer-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border-hover);
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .streamer-btn.active .streamer-dot { background: var(--accent); }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-logout {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: var(--text-muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+  }
+  .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .main-header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .main-title {
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .widget-url-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    cursor: pointer;
+    transition: border-color 0.2s;
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .widget-url-box:hover { border-color: var(--accent2); }
+
+  .content {
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Form elements */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+  }
+
+  .form-input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+  .form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Style editor */
+  .style-editor {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .style-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .style-panel-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+
+  .style-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .style-row label {
+    font-size: 12px;
+    color: var(--text-muted);
+    width: 90px;
+    flex-shrink: 0;
+  }
+
+  .style-row input[type="color"] {
+    width: 36px;
+    height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg3);
+    cursor: pointer;
+    padding: 2px;
+    flex-shrink: 0;
+  }
+
+  .style-row input[type="number"],
+  .style-row input[type="text"],
+  .style-row select {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .style-row input:focus, .style-row select:focus {
+    border-color: var(--accent);
+  }
+
+  /* Audio section */
+  .audio-zone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+  }
+  .audio-zone:hover, .audio-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(255,107,53,0.05);
+  }
+  .audio-zone-text { font-size: 13px; color: var(--text-muted); }
+
+  .audio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+
+  .audio-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .audio-item:hover { border-color: var(--accent); }
+  .audio-item.selected { border-color: var(--accent2); background: rgba(67,170,139,0.08); }
+
+  .audio-item-name {
+    flex: 1;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .audio-play-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.2s;
+    flex-shrink: 0;
+  }
+  .audio-play-btn:hover { color: var(--accent2); }
+
+  .audio-del-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.2s;
+    flex-shrink: 0;
+  }
+  .audio-del-btn:hover { color: var(--red); }
+
+  /* Preview */
+  .preview-box {
+    background: #0d0d1a;
+    border-radius: 10px;
+    padding: 20px;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .preview-notification {
+    background: rgba(10,10,20,0.88);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 16px 20px;
+    width: 100%;
+    max-width: 500px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .preview-notification::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ff6b35, #f7c59f, #90be6d, #43aa8b);
+    background-size: 300%;
+    animation: gradientShift 3s linear infinite;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0%; }
+    100% { background-position: 300%; }
+  }
+
+  .preview-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .preview-icon { font-size: 18px; }
+  #previewText1 { font-size: 20px; font-weight: 800; color: #fff; }
+  #previewText2 { font-size: 14px; color: rgba(255,255,255,0.7); }
+
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 10px;
+    padding: 13px 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    flex: 1;
+  }
+  .btn-primary:hover { background: #ff8555; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { background: #555; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-secondary:hover { border-color: var(--border-hover); }
+
+  .btn-success {
+    background: var(--accent2);
+    color: #fff;
+  }
+  .btn-success:hover { background: #55c9a8; transform: translateY(-1px); }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999;
+    max-width: 320px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success { border-color: var(--green); }
+  #toast.error { border-color: var(--red); }
+
+  /* Streamer edit */
+  .streamer-edit-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg3);
+    border-radius: 8px;
+    margin-top: 8px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(255,107,53,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(255,107,53,0.3);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  @media (max-width: 900px) {
+    .style-editor { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .sidebar { width: 220px; }
+  }
+
+  @media (max-width: 640px) {
+    #app { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; position: relative; }
+    .content { padding: 16px; }
+    .main-header { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">🎮</div>
+    <div class="login-title">Stream Alert Admin</div>
+    <div class="login-sub">Введи код доступа</div>
+    <div class="code-inputs">
+      <input class="code-input" maxlength="1" type="password" id="d1" inputmode="numeric">
+      <input class="code-input" maxlength="1" type="password" id="d2" inputmode="numeric">
+      <input class="code-input" maxlength="1" type="password" id="d3" inputmode="numeric">
+      <input class="code-input" maxlength="1" type="password" id="d4" inputmode="numeric">
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <button class="btn-login" id="loginBtn">Войти →</button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🔔 Alert Panel</div>
+      <div class="sidebar-title">Admin Dashboard</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Стримеры</div>
+      <div id="streamerList"></div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">Выйти</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="main-header">
+      <div>
+        <div class="main-title" id="mainTitle">Выбери стримера</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="mainSub">Выбери стримера слева для работы</div>
+      </div>
+      <div id="widgetUrlBox" class="widget-url-box" style="display:none" title="Нажми чтобы скопировать"></div>
+    </div>
+
+    <div class="content" id="mainContent" style="display:none">
+
+      <!-- Streamer settings -->
+      <div class="card" id="streamerSettingsCard">
+        <div class="card-title">⚙️ Настройки стримера</div>
+        <div class="streamer-edit-form">
+          <div class="form-group">
+            <div class="form-label">Имя</div>
+            <input class="form-input" id="editName" placeholder="Имя стримера">
+          </div>
+          <div class="form-group">
+            <div class="form-label">Slug (ID для URL)</div>
+            <input class="form-input" id="editSlug" placeholder="streamer1">
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn btn-secondary" id="saveStreamerBtn">💾 Сохранить</button>
+        </div>
+      </div>
+
+      <!-- Send alert -->
+      <div class="card">
+        <div class="card-title">📤 Отправить уведомление</div>
+
+        <!-- Texts -->
+        <div class="form-grid" style="margin-bottom:20px">
+          <div class="form-group">
+            <div class="form-label">Строка 1 (заголовок)</div>
+            <input class="form-input" id="text1Input" placeholder="Например: Новый подписчик!">
+          </div>
+          <div class="form-group">
+            <div class="form-label">Строка 2 (описание)</div>
+            <input class="form-input" id="text2Input" placeholder="Спасибо за поддержку!">
+          </div>
+        </div>
+
+        <!-- Style editor -->
+        <div class="card-title" style="margin-bottom:16px">🎨 Стили текста</div>
+        <div class="style-editor">
+          <!-- Text 1 styles -->
+          <div class="style-panel">
+            <div class="style-panel-title">Строка 1</div>
+            <div class="style-row">
+              <label>Цвет текста</label>
+              <input type="color" id="s1color" value="#ffffff">
+            </div>
+            <div class="style-row">
+              <label>Размер (px)</label>
+              <input type="number" id="s1size" value="22" min="10" max="80">
+            </div>
+            <div class="style-row">
+              <label>Жирность</label>
+              <select id="s1weight">
+                <option value="400">Обычный</option>
+                <option value="600">Полужирный</option>
+                <option value="700">Жирный</option>
+                <option value="800" selected>Очень жирный</option>
+                <option value="900">Чёрный</option>
+              </select>
+            </div>
+            <div class="style-row">
+              <label>Тень текста</label>
+              <input type="color" id="s1shadow" value="#000000">
+              <input type="number" id="s1shadowBlur" value="8" min="0" max="30" style="width:60px">
+            </div>
+            <div class="style-row">
+              <label>Обводка</label>
+              <input type="color" id="s1stroke" value="#000000">
+              <input type="number" id="s1strokeW" value="0" min="0" max="5" step="0.5" style="width:60px">
+            </div>
+            <div class="style-row">
+              <label>Выравн.</label>
+              <select id="s1align">
+                <option value="left" selected>Лево</option>
+                <option value="center">Центр</option>
+                <option value="right">Право</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Text 2 styles -->
+          <div class="style-panel">
+            <div class="style-panel-title">Строка 2</div>
+            <div class="style-row">
+              <label>Цвет текста</label>
+              <input type="color" id="s2color" value="#b0b0c8">
+            </div>
+            <div class="style-row">
+              <label>Размер (px)</label>
+              <input type="number" id="s2size" value="16" min="10" max="60">
+            </div>
+            <div class="style-row">
+              <label>Жирность</label>
+              <select id="s2weight">
+                <option value="400" selected>Обычный</option>
+                <option value="600">Полужирный</option>
+                <option value="700">Жирный</option>
+                <option value="800">Очень жирный</option>
+              </select>
+            </div>
+            <div class="style-row">
+              <label>Тень текста</label>
+              <input type="color" id="s2shadow" value="#000000">
+              <input type="number" id="s2shadowBlur" value="4" min="0" max="30" style="width:60px">
+            </div>
+            <div class="style-row">
+              <label>Обводка</label>
+              <input type="color" id="s2stroke" value="#000000">
+              <input type="number" id="s2strokeW" value="0" min="0" max="5" step="0.5" style="width:60px">
+            </div>
+            <div class="style-row">
+              <label>Выравн.</label>
+              <select id="s2align">
+                <option value="left" selected>Лево</option>
+                <option value="center">Центр</option>
+                <option value="right">Право</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div style="margin-top:20px">
+          <div class="form-label" style="margin-bottom:8px">👁️ Превью</div>
+          <div class="preview-box">
+            <div class="preview-notification">
+              <div class="preview-header">
+                <span class="preview-icon">🔔</span>
+                <div id="previewText1">Новый подписчик!</div>
+              </div>
+              <div id="previewText2">Спасибо за поддержку!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audio -->
+        <div style="margin-top:20px">
+          <div class="card-title" style="margin-bottom:12px">🎵 Аудио</div>
+          <div id="audioDropZone" class="audio-zone">
+            <div style="font-size:24px;margin-bottom:6px">🎵</div>
+            <div class="audio-zone-text">Перетащи mp3/wav сюда или нажми чтобы выбрать</div>
+            <input type="file" id="audioFileInput" accept=".mp3,.wav,.ogg,.m4a" style="display:none">
+          </div>
+          <div id="uploadProgress" style="display:none;margin-top:8px;font-size:12px;color:var(--text-muted)">Загружается...</div>
+          <div id="audioList" class="audio-list"></div>
+          <div id="selectedAudioInfo" style="margin-top:8px;font-size:12px;color:var(--accent2);display:none">
+            ✅ Выбрано: <span id="selectedAudioName"></span>
+          </div>
+        </div>
+
+        <!-- Send button -->
+        <div class="btn-row" style="margin-top:24px">
+          <button class="btn btn-primary" id="sendAlertBtn">
+            🚀 Отправить на стрим
+          </button>
+          <button class="btn btn-secondary" id="clearBtn">Сбросить</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+const API = '';
+let token = localStorage.getItem('adminToken') || '';
+let streamers = [];
+let currentStreamer = null;
+let selectedAudioUrl = null;
+let previewAudio = null;
+
+// ─── Auth ──────────────────────────────────────────────────────────────────
+const digits = ['d1','d2','d3','d4'].map(id => document.getElementById(id));
+
+digits.forEach((inp, i) => {
+  inp.addEventListener('input', () => {
+    inp.classList.toggle('filled', inp.value.length > 0);
+    if (inp.value && i < 3) digits[i+1].focus();
+    if (getCode().length === 4) doLogin();
+  });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !inp.value && i > 0) digits[i-1].focus();
+  });
+});
+
+function getCode() { return digits.map(d => d.value).join(''); }
+
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+
+async function doLogin() {
+  const code = getCode();
+  if (code.length !== 4) return;
+  try {
+    const r = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+    const data = await r.json();
+    if (r.ok) {
+      token = data.token;
+      localStorage.setItem('adminToken', token);
+      initApp();
+    } else {
+      showLoginError('Неверный код ❌');
+      digits.forEach(d => { d.value = ''; d.classList.remove('filled'); });
+      digits[0].focus();
+    }
+  } catch(e) {
+    showLoginError('Ошибка сервера');
+  }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 2500);
+}
+
+// Check existing token
+async function checkAuth() {
+  if (!token) return false;
+  try {
+    const r = await fetch('/api/streamers', { headers: { 'x-admin-token': token } });
+    return r.ok;
+  } catch { return false; }
+}
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+async function initApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  await loadStreamers();
+  setupLivePreview();
+}
+
+async function loadStreamers() {
+  const r = await authFetch('/api/streamers');
+  if (r.ok) {
+    streamers = await r.json();
+    renderStreamerList();
+  }
+}
+
+function renderStreamerList() {
+  const list = document.getElementById('streamerList');
+  list.innerHTML = '';
+  streamers.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'streamer-btn' + (currentStreamer?.id === s.id ? ' active' : '');
+    btn.innerHTML = `<span class="streamer-dot"></span>${s.name}`;
+    btn.onclick = () => selectStreamer(s);
+    list.appendChild(btn);
+  });
+}
+
+function selectStreamer(s) {
+  currentStreamer = s;
+  renderStreamerList();
+
+  document.getElementById('mainTitle').textContent = s.name;
+  document.getElementById('mainSub').textContent = 'Готово к отправке уведомлений';
+  document.getElementById('mainContent').style.display = 'flex';
+
+  const widgetUrl = `${location.origin}/widget/${s.slug || s.id}`;
+  const urlBox = document.getElementById('widgetUrlBox');
+  urlBox.style.display = 'block';
+  urlBox.textContent = widgetUrl;
+  urlBox.title = 'Нажми чтобы скопировать: ' + widgetUrl;
+  urlBox.onclick = () => {
+    navigator.clipboard.writeText(widgetUrl);
+    toast('URL скопирован ✅', 'success');
+  };
+
+  document.getElementById('editName').value = s.name;
+  document.getElementById('editSlug').value = s.slug || s.id;
+
+  loadAudios();
+}
+
+// Save streamer
+document.getElementById('saveStreamerBtn').addEventListener('click', async () => {
+  if (!currentStreamer) return;
+  const r = await authFetch(`/api/streamers/${currentStreamer.id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      name: document.getElementById('editName').value,
+      slug: document.getElementById('editSlug').value
+    })
+  });
+  if (r.ok) {
+    const updated = await r.json();
+    const idx = streamers.findIndex(s => s.id === updated.id);
+    streamers[idx] = updated;
+    currentStreamer = updated;
+    renderStreamerList();
+    selectStreamer(updated);
+    toast('Сохранено ✅', 'success');
+  }
+});
+
+// ─── Audio ──────────────────────────────────────────────────────────────────
+const audioDropZone = document.getElementById('audioDropZone');
+const audioFileInput = document.getElementById('audioFileInput');
+
+audioDropZone.addEventListener('click', () => audioFileInput.click());
+audioDropZone.addEventListener('dragover', e => { e.preventDefault(); audioDropZone.classList.add('dragover'); });
+audioDropZone.addEventListener('dragleave', () => audioDropZone.classList.remove('dragover'));
+audioDropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  audioDropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) uploadAudio(file);
+});
+audioFileInput.addEventListener('change', () => {
+  if (audioFileInput.files[0]) uploadAudio(audioFileInput.files[0]);
+});
+
+async function uploadAudio(file) {
+  const prog = document.getElementById('uploadProgress');
+  prog.style.display = 'block';
+  prog.textContent = `Загружается: ${file.name}...`;
+
+  const fd = new FormData();
+  fd.append('audio', file);
+
+  try {
+    const r = await authFetch('/api/upload-audio', { method: 'POST', body: fd });
+    if (r.ok) {
+      const data = await r.json();
+      prog.style.display = 'none';
+      toast('Аудио загружено ✅', 'success');
+      await loadAudios();
+      selectAudio(data.url, file.name);
+    } else {
+      prog.textContent = 'Ошибка загрузки';
+    }
+  } catch(e) {
+    prog.textContent = 'Ошибка: ' + e.message;
+  }
+}
+
+async function loadAudios() {
+  const r = await authFetch('/api/audios');
+  if (!r.ok) return;
+  const audios = await r.json();
+  renderAudioList(audios);
+}
+
+function renderAudioList(audios) {
+  const list = document.getElementById('audioList');
+  list.innerHTML = '';
+  audios.forEach(a => {
+    const item = document.createElement('div');
+    item.className = 'audio-item' + (selectedAudioUrl === a.url ? ' selected' : '');
+    item.innerHTML = `
+      <span class="audio-item-name" title="${a.filename}">${a.filename}</span>
+      <button class="audio-play-btn" title="Прослушать">▶</button>
+      <button class="audio-del-btn" title="Удалить">✕</button>
+    `;
+    item.querySelector('.audio-play-btn').onclick = (e) => {
+      e.stopPropagation();
+      if (previewAudio) { previewAudio.pause(); previewAudio = null; }
+      previewAudio = new Audio(a.url);
+      previewAudio.play();
+    };
+    item.querySelector('.audio-del-btn').onclick = async (e) => {
+      e.stopPropagation();
+      if (!confirm(`Удалить ${a.filename}?`)) return;
+      await authFetch(`/api/audios/${a.filename}`, { method: 'DELETE' });
+      if (selectedAudioUrl === a.url) { selectedAudioUrl = null; updateSelectedAudioUI(); }
+      loadAudios();
+    };
+    item.addEventListener('click', () => selectAudio(a.url, a.filename));
+    list.appendChild(item);
+  });
+}
+
+function selectAudio(url, name) {
+  selectedAudioUrl = url;
+  updateSelectedAudioUI(name);
+  // Re-render list to update selected state
+  loadAudios();
+}
+
+function updateSelectedAudioUI(name) {
+  const info = document.getElementById('selectedAudioInfo');
+  if (selectedAudioUrl) {
+    info.style.display = 'block';
+    document.getElementById('selectedAudioName').textContent = name || selectedAudioUrl;
+  } else {
+    info.style.display = 'none';
+  }
+}
+
+// ─── Live preview ──────────────────────────────────────────────────────────
+function setupLivePreview() {
+  const text1 = document.getElementById('text1Input');
+  const text2 = document.getElementById('text2Input');
+  const prev1 = document.getElementById('previewText1');
+  const prev2 = document.getElementById('previewText2');
+
+  const updatePreview = () => {
+    prev1.textContent = text1.value || 'Строка 1';
+    prev2.textContent = text2.value || 'Строка 2';
+    applyPreviewStyles();
+  };
+
+  text1.addEventListener('input', updatePreview);
+  text2.addEventListener('input', updatePreview);
+
+  // Style inputs
+  const styleInputs = ['s1color','s1size','s1weight','s1shadow','s1shadowBlur','s1stroke','s1strokeW','s1align',
+                       's2color','s2size','s2weight','s2shadow','s2shadowBlur','s2stroke','s2strokeW','s2align'];
+  styleInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', applyPreviewStyles);
+  });
+}
+
+function applyPreviewStyles() {
+  const p1 = document.getElementById('previewText1');
+  const p2 = document.getElementById('previewText2');
+
+  const getShadow = (colorId, blurId) => {
+    const c = document.getElementById(colorId)?.value || '#000';
+    const b = document.getElementById(blurId)?.value || 0;
+    return +b > 0 ? `0 2px ${b}px ${c}` : '';
+  };
+  const getStroke = (colorId, widthId) => {
+    const w = +document.getElementById(widthId)?.value || 0;
+    if (w <= 0) return '';
+    return `${w}px ${document.getElementById(colorId)?.value || '#000'}`;
+  };
+
+  p1.style.color = document.getElementById('s1color')?.value || '';
+  p1.style.fontSize = (document.getElementById('s1size')?.value || 22) + 'px';
+  p1.style.fontWeight = document.getElementById('s1weight')?.value || '';
+  p1.style.textShadow = getShadow('s1shadow', 's1shadowBlur');
+  p1.style.webkitTextStroke = getStroke('s1stroke', 's1strokeW');
+  p1.style.textAlign = document.getElementById('s1align')?.value || '';
+
+  p2.style.color = document.getElementById('s2color')?.value || '';
+  p2.style.fontSize = (document.getElementById('s2size')?.value || 16) + 'px';
+  p2.style.fontWeight = document.getElementById('s2weight')?.value || '';
+  p2.style.textShadow = getShadow('s2shadow', 's2shadowBlur');
+  p2.style.webkitTextStroke = getStroke('s2stroke', 's2strokeW');
+  p2.style.textAlign = document.getElementById('s2align')?.value || '';
+}
+
+function collectStyles() {
+  const getShadow = (colorId, blurId) => {
+    const c = document.getElementById(colorId)?.value || '#000';
+    const b = +document.getElementById(blurId)?.value || 0;
+    return +b > 0 ? `0 2px ${b}px ${c}` : '';
+  };
+  return {
+    text1: {
+      color: document.getElementById('s1color').value,
+      fontSize: +document.getElementById('s1size').value,
+      fontWeight: document.getElementById('s1weight').value,
+      textShadow: getShadow('s1shadow', 's1shadowBlur'),
+      stroke: document.getElementById('s1strokeW').value > 0 ? document.getElementById('s1stroke').value : '',
+      strokeWidth: +document.getElementById('s1strokeW').value,
+      textAlign: document.getElementById('s1align').value,
+    },
+    text2: {
+      color: document.getElementById('s2color').value,
+      fontSize: +document.getElementById('s2size').value,
+      fontWeight: document.getElementById('s2weight').value,
+      textShadow: getShadow('s2shadow', 's2shadowBlur'),
+      stroke: document.getElementById('s2strokeW').value > 0 ? document.getElementById('s2stroke').value : '',
+      strokeWidth: +document.getElementById('s2strokeW').value,
+      textAlign: document.getElementById('s2align').value,
+    }
+  };
+}
+
+// ─── Send alert ──────────────────────────────────────────────────────────────
+document.getElementById('sendAlertBtn').addEventListener('click', async () => {
+  if (!currentStreamer) return toast('Выбери стримера', 'error');
+  const t1 = document.getElementById('text1Input').value.trim();
+  const t2 = document.getElementById('text2Input').value.trim();
+  if (!t1 && !t2) return toast('Заполни хотя бы одну строку', 'error');
+
+  const btn = document.getElementById('sendAlertBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Отправка...';
+
+  try {
+    const r = await authFetch('/api/alert', {
+      method: 'POST',
+      body: JSON.stringify({
+        streamerId: currentStreamer.id,
+        text1: t1,
+        text2: t2,
+        audioUrl: selectedAudioUrl,
+        styles: collectStyles()
+      })
+    });
+    const data = await r.json();
+    if (r.ok) {
+      if (data.widgetCount > 0) {
+        toast(`✅ Отправлено на ${data.widgetCount} виджет(а)`, 'success');
+      } else {
+        toast('⚠️ Нет подключённых виджетов', 'error');
+      }
+    } else {
+      toast('Ошибка: ' + (data.error || 'Unknown'), 'error');
+    }
+  } catch(e) {
+    toast('Ошибка сети', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Отправить на стрим';
+  }
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  document.getElementById('text1Input').value = '';
+  document.getElementById('text2Input').value = '';
+  selectedAudioUrl = null;
+  updateSelectedAudioUI();
+  loadAudios();
+  document.getElementById('previewText1').textContent = 'Строка 1';
+  document.getElementById('previewText2').textContent = 'Строка 2';
+});
+
+// ─── Logout ─────────────────────────────────────────────────────────────────
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await authFetch('/api/logout', { method: 'POST' }).catch(() => {});
+  localStorage.removeItem('adminToken');
+  token = '';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  digits.forEach(d => { d.value = ''; d.classList.remove('filled'); });
+  currentStreamer = null;
+});
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+async function authFetch(url, opts = {}) {
+  const headers = { 'x-admin-token': token, ...(opts.headers || {}) };
+  if (!(opts.body instanceof FormData)) {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+  }
+  return fetch(url, { ...opts, headers });
+}
+
+let toastTimer;
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 3000);
+}
+
+// ─── Startup ──────────────────────────────────────────────────────────────────
+(async () => {
+  if (token && await checkAuth()) {
+    initApp();
+  } else {
+    localStorage.removeItem('adminToken');
+    token = '';
+    digits[0].focus();
+  }
+})();
+</script>
+</body>
+</html>
