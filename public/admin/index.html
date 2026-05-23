@@ -817,26 +817,37 @@ function applyPreviewStyles() {
     const b = +document.getElementById(blurId)?.value || 0;
     return b > 0 ? `0 2px ${b}px ${c}` : '';
   };
-  const getStroke = (colorId, widthId) => {
+  const getOutlineStroke = (colorId, widthId, shadowStr) => {
     const w = +document.getElementById(widthId)?.value || 0;
-    return w > 0 ? `${w}px ${document.getElementById(colorId)?.value || '#000'}` : '';
+    if (w <= 0) return shadowStr;
+    const c = document.getElementById(colorId)?.value || '#000';
+    const d = Math.round(w * 0.707 * 10) / 10;
+    const stroke = [
+      `${w}px 0 0 ${c}`, `-${w}px 0 0 ${c}`,
+      `0 ${w}px 0 ${c}`, `0 -${w}px 0 ${c}`,
+      `${d}px ${d}px 0 ${c}`, `-${d}px ${d}px 0 ${c}`,
+      `${d}px -${d}px 0 ${c}`, `-${d}px -${d}px 0 ${c}`
+    ].join(', ');
+    return shadowStr ? stroke + ', ' + shadowStr : stroke;
   };
 
-  // Arial — как в виджете
+  const shadow1 = getShadow('s1shadow', 's1shadowBlur');
+  const shadow2 = getShadow('s2shadow', 's2shadowBlur');
+
   p1.style.fontFamily = 'Arial, sans-serif';
   p1.style.color = document.getElementById('s1color')?.value || '#fff';
   p1.style.fontSize = (document.getElementById('s1size')?.value || 22) + 'px';
   p1.style.fontWeight = document.getElementById('s1weight')?.value || '800';
-  p1.style.textShadow = getShadow('s1shadow', 's1shadowBlur');
-  p1.style.webkitTextStroke = getStroke('s1stroke', 's1strokeW');
+  p1.style.textShadow = getOutlineStroke('s1stroke', 's1strokeW', shadow1);
+  p1.style.webkitTextStroke = '';
   p1.style.textAlign = document.getElementById('s1align')?.value || 'left';
 
   p2.style.fontFamily = 'Arial, sans-serif';
   p2.style.color = document.getElementById('s2color')?.value || 'rgba(255,255,255,0.85)';
   p2.style.fontSize = (document.getElementById('s2size')?.value || 16) + 'px';
   p2.style.fontWeight = document.getElementById('s2weight')?.value || '500';
-  p2.style.textShadow = getShadow('s2shadow', 's2shadowBlur');
-  p2.style.webkitTextStroke = getStroke('s2stroke', 's2strokeW');
+  p2.style.textShadow = getOutlineStroke('s2stroke', 's2strokeW', shadow2);
+  p2.style.webkitTextStroke = '';
   p2.style.textAlign = document.getElementById('s2align')?.value || 'left';
 }
 

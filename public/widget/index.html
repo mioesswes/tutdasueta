@@ -97,12 +97,14 @@
   </div>
 </div>
 <div id="status"></div>
+<audio id="donAudio" src="/public/uploads/don.m4a" preload="auto"></audio>
 <audio id="alertAudio" preload="auto"></audio>
 
 <script>
   const alertBox = document.getElementById('alertBox');
   const text1El = document.getElementById('text1');
   const text2El = document.getElementById('text2');
+  const donAudio = document.getElementById('donAudio');
   const audioEl = document.getElementById('alertAudio');
   const statusDot = document.getElementById('status');
 
@@ -135,18 +137,39 @@
     alertBox.classList.remove('hiding');
     alertBox.classList.add('visible');
 
-    let duration = 5000;
-
-    if (data.audioUrl) {
-      audioEl.src = data.audioUrl;
-      audioEl.load();
-      audioEl.onloadedmetadata = () => { duration = audioEl.duration * 1000; };
-      audioEl.onerror = () => scheduleHide(duration);
-      audioEl.play().catch(e => console.warn('Audio play failed:', e));
-      audioEl.onended = () => scheduleHide(0);
-    } else {
-      scheduleHide(duration);
-    }
+    // Сначала играет don.m4a, потом — выбранное аудио (если есть)
+    donAudio.currentTime = 0;
+    donAudio.onended = () => {
+      donAudio.onended = null;
+      donAudio.onerror = null;
+      if (data.audioUrl) {
+        audioEl.src = data.audioUrl;
+        audioEl.load();
+        audioEl.onerror = () => scheduleHide(0);
+        audioEl.play().catch(e => scheduleHide(0));
+        audioEl.onended = () => scheduleHide(0);
+      } else {
+        scheduleHide(0);
+      }
+    };
+    donAudio.onerror = () => {
+      donAudio.onended = null;
+      donAudio.onerror = null;
+      // don.m4a не загрузился — играем только выбранное
+      if (data.audioUrl) {
+        audioEl.src = data.audioUrl;
+        audioEl.load();
+        audioEl.onerror = () => scheduleHide(5000);
+        audioEl.play().catch(e => scheduleHide(5000));
+        audioEl.onended = () => scheduleHide(0);
+      } else {
+        scheduleHide(5000);
+      }
+    };
+    donAudio.play().catch(e => {
+      console.warn('don.m4a play failed:', e);
+      donAudio.onerror && donAudio.onerror();
+    });
   }
 
   function scheduleHide(delay) {
@@ -168,8 +191,25 @@
     el.style.color = styles.color || '';
     el.style.fontWeight = styles.fontWeight || '';
     el.style.textShadow = styles.textShadow || '';
-    el.style.webkitTextStroke = (styles.stroke && styles.strokeWidth > 0)
-      ? `${styles.strokeWidth}px ${styles.stroke}` : '';
+    // Обводка наружу через text-shadow (8 направлений)
+    if (styles.stroke && styles.strokeWidth > 0) {
+      const c = styles.stroke;
+      const w = styles.strokeWidth;
+      const diag = Math.round(w * 0.707 * 10) / 10;
+      const existingShadow = styles.textShadow || '';
+      const strokeShadow = [
+        `${w}px 0 0 ${c}`, `-${w}px 0 0 ${c}`,
+        `0 ${w}px 0 ${c}`, `0 -${w}px 0 ${c}`,
+        `${diag}px ${diag}px 0 ${c}`, `-${diag}px ${diag}px 0 ${c}`,
+        `${diag}px -${diag}px 0 ${c}`, `-${diag}px -${diag}px 0 ${c}`
+      ].join(', ');
+      el.style.textShadow = existingShadow
+        ? strokeShadow + ', ' + existingShadow
+        : strokeShadow;
+      el.style.webkitTextStroke = '';
+    } else {
+      el.style.webkitTextStroke = '';
+    }
     el.style.textAlign = styles.textAlign || 'left';
   }
 
