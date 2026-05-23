@@ -26,41 +26,18 @@
   }
 
   .alert-box {
-    background: rgba(10, 10, 20, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 12px;
-    padding: 22px 28px;
-    backdrop-filter: blur(12px);
-    box-shadow:
-      0 8px 40px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(255,255,255,0.05) inset;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 10px 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     opacity: 0;
     transform: translateY(-30px) scale(0.95);
     transition:
       opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
       transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Animated top border */
-  .alert-box::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #ff6b35, #f7c59f, #efefd0, #90be6d, #43aa8b, #577590);
-    background-size: 300% 100%;
-    animation: gradientShift 3s linear infinite;
-    border-radius: 12px 12px 0 0;
-  }
-
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 300% 50%; }
   }
 
   .alert-box.visible {
@@ -76,70 +53,26 @@
       transform 0.4s ease-in;
   }
 
-  .alert-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 4px;
-  }
-
-  .alert-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #ff6b35, #f7931e);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-    box-shadow: 0 0 12px rgba(255, 107, 53, 0.5);
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 12px rgba(255,107,53,0.5); }
-    50% { box-shadow: 0 0 24px rgba(255,107,53,0.8); }
-  }
-
   .alert-text1 {
     font-size: 22px;
     font-weight: 800;
     color: #ffffff;
     line-height: 1.2;
     word-break: break-word;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-    /* Will be overridden by inline styles from admin */
+    width: 100%;
+    display: block;
   }
 
   .alert-text2 {
     font-size: 16px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.85);
     line-height: 1.4;
     word-break: break-word;
-    /* Will be overridden by inline styles from admin */
-  }
-
-  /* Timer bar */
-  .timer-bar {
-    height: 3px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 2px;
-    margin-top: 8px;
-    overflow: hidden;
-  }
-
-  .timer-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #43aa8b, #90be6d);
-    border-radius: 2px;
     width: 100%;
-    transform-origin: left;
-    transition: transform linear;
+    display: block;
   }
 
-  /* Connection status (small dot, hidden when OK) */
   #status {
     position: fixed;
     bottom: 8px;
@@ -160,16 +93,11 @@
 <body>
 <div id="alert-container">
   <div class="alert-box" id="alertBox">
-    <div class="alert-header">
-      <div class="alert-icon">🔔</div>
-      <div class="alert-text1" id="text1">Заголовок</div>
-    </div>
-    <div class="alert-text2" id="text2">Текст уведомления</div>
-    <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+    <div class="alert-text1" id="text1"></div>
+    <div class="alert-text2" id="text2"></div>
   </div>
 </div>
 <div id="status"></div>
-
 <audio id="alertAudio" preload="auto"></audio>
 
 <script>
@@ -177,18 +105,14 @@
   const text1El = document.getElementById('text1');
   const text2El = document.getElementById('text2');
   const audioEl = document.getElementById('alertAudio');
-  const timerFill = document.getElementById('timerFill');
   const statusDot = document.getElementById('status');
 
-  // Get streamer ID from URL path: /widget/STREAMER_ID
-  const streamerId = location.pathname.split('/').pop();
+  const streamerId = location.pathname.split('/').filter(Boolean).pop();
 
   let hideTimeout = null;
-  let currentAudio = null;
   const alertQueue = [];
   let isShowingAlert = false;
 
-  // ─── Alert queue system ───────────────────────────────────────────────────
   function enqueueAlert(data) {
     alertQueue.push(data);
     if (!isShowingAlert) processQueue();
@@ -201,50 +125,29 @@
   }
 
   function showAlert(data) {
-    // Set texts
     text1El.textContent = data.text1 || '';
     text2El.textContent = data.text2 || '';
 
-    // Apply custom styles
     const s = data.styles || {};
     applyStyles(text1El, s.text1 || {});
     applyStyles(text2El, s.text2 || {});
 
-    // Show box
     alertBox.classList.remove('hiding');
     alertBox.classList.add('visible');
 
-    // Play audio
-    let duration = 5000; // default 5s if no audio
+    let duration = 5000;
 
     if (data.audioUrl) {
       audioEl.src = data.audioUrl;
       audioEl.load();
       audioEl.onloadedmetadata = () => {
         duration = audioEl.duration * 1000;
-        startTimer(duration);
       };
-      audioEl.onerror = () => startTimer(duration); // fallback
+      audioEl.onerror = () => scheduleHide(duration);
       audioEl.play().catch(e => console.warn('Audio play failed:', e));
-
-      audioEl.onended = () => {
-        scheduleHide(0);
-      };
+      audioEl.onended = () => scheduleHide(0);
     } else {
-      startTimer(duration);
-    }
-
-    function startTimer(ms) {
-      timerFill.style.transition = 'none';
-      timerFill.style.transform = 'scaleX(1)';
-      requestAnimationFrame(() => {
-        timerFill.style.transition = `transform ${ms}ms linear`;
-        timerFill.style.transform = 'scaleX(0)';
-      });
-
-      if (!data.audioUrl) {
-        scheduleHide(ms);
-      }
+      scheduleHide(duration);
     }
   }
 
@@ -253,7 +156,6 @@
     hideTimeout = setTimeout(() => {
       alertBox.classList.remove('visible');
       alertBox.classList.add('hiding');
-      // After animation, process next
       setTimeout(() => {
         alertBox.classList.remove('hiding');
         processQueue();
@@ -266,39 +168,34 @@
     el.style.color = styles.color || '';
     el.style.fontWeight = styles.fontWeight || '';
     el.style.textShadow = styles.textShadow || '';
-    el.style.webkitTextStroke = styles.stroke ? `${styles.strokeWidth || 1}px ${styles.stroke}` : '';
+    el.style.webkitTextStroke = (styles.stroke && styles.strokeWidth > 0)
+      ? `${styles.strokeWidth}px ${styles.stroke}` : '';
     el.style.fontFamily = styles.fontFamily ? `'${styles.fontFamily}', sans-serif` : '';
-    el.style.textAlign = styles.textAlign || '';
+    el.style.textAlign = styles.textAlign || 'left';
   }
 
-  // ─── WebSocket connection ─────────────────────────────────────────────────
   const WS_HOST = location.host;
   let ws;
 
   function connect() {
     ws = new WebSocket(`ws://${WS_HOST}/?streamer=${streamerId}`);
-
-    ws.onopen = () => {
-      console.log('[WS] Connected');
-      statusDot.className = 'connected';
-    };
-
+    ws.onopen = () => { statusDot.className = 'connected'; };
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === 'alert') {
-          enqueueAlert(data);
-        }
-      } catch(e) { console.error('WS parse error', e); }
+        if (data.type === 'alert') enqueueAlert(data);
+      } catch(e) {}
     };
-
     ws.onclose = () => {
-      console.log('[WS] Disconnected, reconnecting in 3s...');
       statusDot.className = 'disconnected';
       setTimeout(connect, 3000);
     };
+    ws.onerror = () => ws.close();
 
-    ws.onerror = (e) => { console.error('[WS] Error', e); ws.close(); };
+    const ping = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) ws.ping && ws.ping();
+    }, 25000);
+    ws.addEventListener('close', () => clearInterval(ping));
   }
 
   connect();

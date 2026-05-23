@@ -973,12 +973,12 @@ function selectStreamer(s) {
 // Save streamer
 document.getElementById('saveStreamerBtn').addEventListener('click', async () => {
   if (!currentStreamer) return;
+  const newSlug = document.getElementById('editSlug').value.trim();
+  const newName = document.getElementById('editName').value.trim();
+  const oldSlug = currentStreamer.slug || currentStreamer.id;
   const r = await authFetch(`/api/streamers/${currentStreamer.id}`, {
     method: 'PUT',
-    body: JSON.stringify({
-      name: document.getElementById('editName').value,
-      slug: document.getElementById('editSlug').value
-    })
+    body: JSON.stringify({ name: newName, slug: newSlug })
   });
   if (r.ok) {
     const updated = await r.json();
@@ -986,8 +986,17 @@ document.getElementById('saveStreamerBtn').addEventListener('click', async () =>
     streamers[idx] = updated;
     currentStreamer = updated;
     renderStreamerList();
-    selectStreamer(updated);
-    toast('Сохранено ✅', 'success');
+    // Update header and widget URL box without full re-select
+    document.getElementById('mainTitle').textContent = updated.name;
+    const newWidgetUrl = `${location.origin}/widget/${updated.slug || updated.id}`;
+    const urlBox = document.getElementById('widgetUrlBox');
+    urlBox.textContent = newWidgetUrl;
+    urlBox.title = 'Нажми чтобы скопировать: ' + newWidgetUrl;
+    if (oldSlug !== newSlug) {
+      toast('Сохранено ✅ Обнови URL в OBS!', 'success');
+    } else {
+      toast('Сохранено ✅', 'success');
+    }
   }
 });
 
