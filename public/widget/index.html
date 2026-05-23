@@ -137,14 +137,26 @@
     alertBox.classList.remove('hiding');
     alertBox.classList.add('visible');
 
+    resetAudio(donAudio);
+    resetAudio(audioEl);
+
     // Сначала играет don-звук, потом — выбранное аудио
     function playSelected() {
       if (data.audioUrl) {
         audioEl.src = data.audioUrl;
         audioEl.load();
-        audioEl.onended = () => scheduleHide(0);
-        audioEl.onerror = () => scheduleHide(0);
-        audioEl.play().catch(() => scheduleHide(0));
+        audioEl.onended = () => {
+          resetAudio(audioEl, false);
+          scheduleHide(0);
+        };
+        audioEl.onerror = () => {
+          resetAudio(audioEl, false);
+          scheduleHide(0);
+        };
+        audioEl.play().catch(() => {
+          resetAudio(audioEl, false);
+          scheduleHide(0);
+        });
       } else {
         scheduleHide(0);
       }
@@ -165,8 +177,7 @@
       const src = sources[0];
       console.log('[don] пробуем:', src);
 
-      donAudio.onended = null;
-      donAudio.onerror = null;
+      resetAudio(donAudio);
       donAudio.src = src;
       donAudio.load();
 
@@ -176,16 +187,14 @@
       };
 
       donAudio.onended = () => {
-        donAudio.onended = null;
-        donAudio.onerror = null;
+        resetAudio(donAudio, false);
         console.log('[don] ended:', src);
         playSelected();
       };
 
       donAudio.onerror = () => {
-        donAudio.onended = null;
-        donAudio.onerror = null;
-        console.warn('[don] ошибка:', src, donAudio.error);
+        resetAudio(donAudio, false);
+        console.warn('[don] error:', src, donAudio.error);
         tryPlayDon(sources.slice(1));
       };
 
@@ -195,14 +204,22 @@
           console.log('[don] play() успешно:', src);
         }).catch(e => {
           console.warn('[don] play() rejected:', src, e.message);
-          donAudio.onended = null;
-          donAudio.onerror = null;
+          resetAudio(donAudio, false);
           tryPlayDon(sources.slice(1));
         });
       }
     }
 
     tryPlayDon(DON_SOURCES);
+  }
+
+  function resetAudio(audio, clearSrc = true) {
+    audio.pause();
+    audio.currentTime = 0;
+    audio.onended = null;
+    audio.onerror = null;
+    audio.oncanplaythrough = null;
+    if (clearSrc) audio.removeAttribute('src');
   }
 
   function scheduleHide(delay) {
