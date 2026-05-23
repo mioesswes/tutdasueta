@@ -138,38 +138,43 @@
     alertBox.classList.add('visible');
 
     // Сначала играет don.m4a, потом — выбранное аудио (если есть)
-    donAudio.currentTime = 0;
-    donAudio.onended = () => {
-      donAudio.onended = null;
-      donAudio.onerror = null;
+    function playSelected() {
       if (data.audioUrl) {
         audioEl.src = data.audioUrl;
         audioEl.load();
-        audioEl.onerror = () => scheduleHide(0);
-        audioEl.play().catch(e => scheduleHide(0));
         audioEl.onended = () => scheduleHide(0);
+        audioEl.onerror = () => scheduleHide(0);
+        audioEl.play().catch(() => scheduleHide(0));
       } else {
         scheduleHide(0);
       }
+    }
+
+    donAudio.onended = null;
+    donAudio.onerror = null;
+    donAudio.currentTime = 0;
+
+    donAudio.onended = () => {
+      donAudio.onended = null;
+      donAudio.onerror = null;
+      playSelected();
     };
     donAudio.onerror = () => {
       donAudio.onended = null;
       donAudio.onerror = null;
-      // don.m4a не загрузился — играем только выбранное
-      if (data.audioUrl) {
-        audioEl.src = data.audioUrl;
-        audioEl.load();
-        audioEl.onerror = () => scheduleHide(5000);
-        audioEl.play().catch(e => scheduleHide(5000));
-        audioEl.onended = () => scheduleHide(0);
-      } else {
-        scheduleHide(5000);
-      }
+      console.warn('don.m4a error, skipping to selected audio');
+      playSelected();
     };
-    donAudio.play().catch(e => {
-      console.warn('don.m4a play failed:', e);
-      donAudio.onerror && donAudio.onerror();
-    });
+
+    const donPromise = donAudio.play();
+    if (donPromise !== undefined) {
+      donPromise.catch(e => {
+        console.warn('don.m4a play() rejected:', e);
+        donAudio.onended = null;
+        donAudio.onerror = null;
+        playSelected();
+      });
+    }
   }
 
   function scheduleHide(delay) {

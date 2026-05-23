@@ -276,7 +276,7 @@ app.post('/api/upload-audio', authMiddleware, upload.single('audio'), (req, res)
 
 app.get('/api/audios', authMiddleware, (req, res) => {
   const files = fs.readdirSync(UPLOADS_DIR)
-    .filter(f => /\.(mp3|wav|ogg|m4a)$/i.test(f))
+    .filter(f => /\.(mp3|wav|ogg|m4a)$/i.test(f) && f.toLowerCase() !== 'don.m4a')
     .map(f => ({ filename: f, url: `/public/uploads/${f}`, mtime: fs.statSync(path.join(UPLOADS_DIR, f)).mtime }))
     .sort((a, b) => b.mtime - a.mtime);
   res.json(files);
@@ -285,6 +285,9 @@ app.get('/api/audios', authMiddleware, (req, res) => {
 app.delete('/api/audios/:filename', authMiddleware, (req, res) => {
   // path traversal protection
   const filename = path.basename(req.params.filename);
+  if (filename.toLowerCase() === 'don.m4a') {
+    return res.status(403).json({ error: 'This file is protected' });
+  }
   const file = path.join(UPLOADS_DIR, filename);
   if (fs.existsSync(file)) fs.unlinkSync(file);
   res.json({ ok: true });
